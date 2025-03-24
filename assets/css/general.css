@@ -1,0 +1,12 @@
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+
+header{
+    background-color: black;    
+}
+
+.logotipo{
+    margin: auto;
+  width: 60%;
+  padding: 10px;
+}
