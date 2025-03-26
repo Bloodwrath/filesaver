@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Tu código de fetch para cargar el header
+    // ** Cargar el contenido del header **
     fetch("header.html")
         .then(response => {
             if (!response.ok) {
@@ -10,40 +10,59 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             document.getElementById("header").innerHTML = data;
         })
-        .catch(error => console.error("Error:", error));
+        .catch(error => console.error("Error al cargar el header:", error));
 
-    // Aquí va el código para la autenticación de Firebase
-    document.getElementById("login-form").addEventListener("submit", function (event) {
+    // ** 1. Manejo del formulario de login con correo y contraseña **
+    const form = document.querySelector("form");  // Asegúrate de que el selector sea correcto
+    form.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        const email = document.getElementById("exampleDropdownFormEmail2").value;
+        const password = document.getElementById("exampleDropdownFormPassword2").value;
 
-        signInWithEmailAndPassword(auth, email, password)
+        // Validar que los campos no estén vacíos
+        if (email === "" || password === "") {
+            alert("Por favor, ingrese su correo y contraseña.");
+            return;  // Evitar que el formulario se envíe si faltan campos
+        }
+
+        // Iniciar sesión con Firebase Authentication usando correo y contraseña
+        firebase.auth().signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log("Usuario autenticado:", user);
-                window.location.href = "/dashboard.html";  // Redirigir al dashboard
+
+                // Redirigir al usuario a otra página después del login
+                window.location.href = "/dashboard.html";  // Cambia la URL de redirección según tus necesidades
             })
             .catch((error) => {
                 const errorMessage = error.message;
+                console.error("Error al iniciar sesión:", errorMessage);
                 alert("Error al iniciar sesión: " + errorMessage);
             });
     });
 
-    // Código de login con Google
-    document.getElementById("google-login").addEventListener("click", function (event) {
-        event.preventDefault();
+    // ** 2. Iniciar sesión con Google **
+    const googleLoginBtn = document.getElementById("google-login");
 
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider)
+    googleLoginBtn.addEventListener("click", function (event) {
+        event.preventDefault();  // Evita que el formulario se envíe al hacer clic en el botón de Google
+
+        // Crear un proveedor de Google para la autenticación
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        // Iniciar sesión con Google usando un popup
+        firebase.auth().signInWithPopup(provider)
             .then((result) => {
                 const user = result.user;
                 console.log("Usuario autenticado con Google:", user);
-                window.location.href = "/dashboard.html";  // Redirigir al dashboard
+
+                // Redirigir al usuario después de un login exitoso
+                window.location.href = "/dashboard.html";  // Cambia la URL según donde quieras redirigir al usuario
             })
             .catch((error) => {
                 const errorMessage = error.message;
+                console.error("Error al iniciar sesión con Google:", errorMessage);
                 alert("Error al iniciar sesión con Google: " + errorMessage);
             });
     });
