@@ -51,7 +51,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then((result) => {
                     console.log("Usuario autenticado con Google:", result.user);
                     alert("Inicio de sesión con Google exitoso.");
-                    window.location.href = "dashboard.html"; // Redirigir después del login
+                    window.location.href = "index.html"; // Redirigir después del login
+
                 })
                 .catch((error) => {
                     console.error("Error en el login con Google:", error.message);
