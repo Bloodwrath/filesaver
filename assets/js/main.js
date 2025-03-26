@@ -104,15 +104,15 @@ async function logout() {
     document.addEventListener('DOMContentLoaded', async (e) => {
         e.preventDefault();
         if (sessionStorage.getItem('estadoCuenta') == 'true') {
-            document.getElementById('login_header').innerHTML = '<a href="./perfilUsuario.html"><i class="la la-user"></i></a>'+
-            '<a href="login.html" id="logOut" style="font-family: Montserrat, sans-serif;"> cerrar sesión </a>';
+            document.getElementById('login_header').innerHTML = '<a href="./perfilUsuario.html"><i class="la la-user"></i></a>' +
+                '<a href="login.html" id="logOut" style="font-family: Montserrat, sans-serif;"> cerrar sesión </a>';
             document.getElementById('logOut').addEventListener('click', function () {
                 sessionStorage.removeItem('idCliente');
                 sessionStorage.setItem('estadoCuenta', false);
             });
 
         } else {
-            
+
             document.getElementById('login_header').innerHTML = '<a href="login.html" style="font-family: Montserrat, sans-serif;"> iniciar sesión/registrarse </a>';
             document.getElementById('login_header').addEventListener('click', function () {
                 window.location = './login.html';
@@ -140,3 +140,23 @@ async function numCar() {
 }
 
 addEventListener('click', numCar());
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const headerDiv = document.getElementById("header");
+    if (headerDiv) {
+        fetch("header.html")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Error al cargar el header.");
+                }
+                return response.text();
+            })
+            .then(data => {
+                headerDiv.innerHTML = data;
+            })
+            .catch(error => console.error("Error:", error));
+    } else {
+        console.error("El div con id 'header' no se encuentra en el documento.");
+    }
+});
