@@ -1,3 +1,4 @@
+<!--header-->
 <header class="p-3">
     <div class="container">
         <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
@@ -19,33 +20,20 @@
             <div class="dropdown">
                 <button id="login" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                     aria-expanded="false" data-bs-auto-close="outside">Login</button>
-                <form class="dropdown-menu p-4">
+                <form class="dropdown-menu p-4" id="login-form">
                     <div class="mb-3">
                         <label for="exampleDropdownFormEmail2" class="form-label">Correo electronico</label>
-                        <input type="email" class="form-control" id="exampleDropdownFormEmail2"
-                            placeholder="email@example.com">
+                        <input type="email" class="form-control" id="email" placeholder="email@example.com" required>
                     </div>
                     <div class="mb-3">
                         <label for="exampleDropdownFormPassword2" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="exampleDropdownFormPassword2"
-                            placeholder="Password">
+                        <input type="password" class="form-control" id="password" placeholder="Password" required>
                     </div>
                     <div class="mb-3">
                         <button class="btn btn-primary" id="google-login">Iniciar Sesión con Google</button>
                     </div>
-                    <button id="INICIAR SESION" type="submit" class="btn btn-primary">INICIAR SESION</button>
+                    <button id="login-submit" type="submit" class="btn btn-primary">INICIAR SESION</button>
                 </form>
             </div>
         </div>
 </header>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-analytics.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-storage.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.3/firebase-firestore.js"></script>
-<script src="js/firebaseKey.js"></script>
-<script src="assets/js/main.js"></script>
-<script src="./assets/js/registro.js"></script>
