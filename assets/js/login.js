@@ -44,21 +44,26 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // 🔹 Login con Google
-        googleLoginButton.addEventListener("click", function (event) {
-            event.preventDefault(); // Evita que se envíe el formulario
+        document.addEventListener("click", function (event) {
+            if (event.target.id === "google-login") {
+                event.preventDefault();
 
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    console.log("Usuario autenticado con Google:", result.user);
-                    alert("Inicio de sesión con Google exitoso.");
-                    window.location.href = "index.html"; // Redirigir después del login
+                const auth = getAuth(app);
+                const provider = new GoogleAuthProvider();
 
-                })
-                .catch((error) => {
-                    console.error("Error en el login con Google:", error.message);
-                    alert("Error: " + error.message);
-                });
+                signInWithPopup(auth, provider)
+                    .then((result) => {
+                        console.log("Usuario autenticado con Google:", result.user);
+                        alert("Inicio de sesión con Google exitoso.");
+                        window.location.href = "index.html"; // 🔹 Redirige automáticamente a index.html
+                    })
+                    .catch((error) => {
+                        console.error("Error en el login con Google:", error.message);
+                        alert("Error: " + error.message);
+                    });
+            }
         });
+
 
     }, 500); // Se da un pequeño retraso para que el header cargue correctamente
 });
