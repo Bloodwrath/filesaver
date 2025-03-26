@@ -26,6 +26,7 @@ form.addEventListener('keyup', async (e) => {
 });
 
 
+
 document.getElementById('loginBtn').addEventListener('click', async (e) => {
     e.preventDefault();
     login();
@@ -37,11 +38,12 @@ async function login() {
         sessionStorage.setItem('idCliente', idCliente);
         mensajeDeExito('Inicio de sesion exitoso', './catalogo.html');
     } else {
-       mensajeAdvertencia( 'Los datos que ingreso son incorrectos' );
-       return;
+        mensajeAdvertencia('Los datos que ingreso son incorrectos');
+        return;
     }
 
 }
+
 
 /*document.getElementById('login_header').addEventListener('click', async (estadoCuenta) => {
     e.preventDefault();

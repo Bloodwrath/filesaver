@@ -55,7 +55,7 @@ const validarCampo = (expresion, input, campo) => {
     if (expresion.test(input.value)) {
         document.getElementById(`grupo__${campo}`).classList.remove('formulario__grupo-incorrecto');
         document.getElementById(`grupo__${campo}`).classList.add('formulario__grupo-correcto');
-        document.querySelector(`#grupo__${ campo} i`).classList.add('fa-check-circle');
+        document.querySelector(`#grupo__${campo} i`).classList.add('fa-check-circle');
         document.querySelector(`#grupo__${campo} i`).classList.remove('fa-times-circle');
         document.querySelector(`#grupo__${campo} .formulario__input-error`).classList.remove('formulario__input-error-activo');
         //document.querySelector(`#grupo__${campo} .formulario__input-error`).show();
@@ -95,4 +95,32 @@ const validarPassword2 = () => {
 inputs.forEach((input) => {
     input.addEventListener('keyup', validarFormulario);
     input.addEventListener('blur', validarFormulario);
+});
+
+import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+const provider = new GoogleAuthProvider();
+
+document.getElementById("google-login").addEventListener("click", function () {
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            alert("Inicio de sesión con Google exitoso.");
+        })
+        .catch((error) => {
+            alert(error.message);
+        });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("header.html")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error al cargar el header.");
+            }
+            return response.text();
+        })
+        .then(data => {
+            document.getElementById("header").innerHTML = data;
+        })
+        .catch(error => console.error("Error:", error));
 });
