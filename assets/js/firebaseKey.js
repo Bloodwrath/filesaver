@@ -1,7 +1,8 @@
-// firebaseKey.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js";
+// Importamos Firebase correctamente
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
 
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDjQskrX2aCrvexZmv0he6C6WeVOxkd-EU",
   authDomain: "organizador-3e655.firebaseapp.com",
@@ -12,8 +13,9 @@ const firebaseConfig = {
   measurementId: "G-7GMHTZYQLD"
 };
 
-// Initialize Firebase
+// Inicializamos Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const analytics = getAnalytics(app);
 
-export { auth, GoogleAuthProvider, signInWithPopup };
+// Exportamos la instancia de Firebase correctamente
+export { app };

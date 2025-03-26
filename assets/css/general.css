@@ -1,27 +1,25 @@
-@import "../node_modules/bootstrap/scss/bootstrap";
-
-
-header{
-    background-color: black;    
+header {
+  background-color: black;
 }
 
-.logotipo{
-    margin: auto;
+.logotipo {
+  margin: auto;
   width: 60%;
   padding: 10px;
 }
 
-#login{
+#login {
   background-color: rgba(255, 212, 70, 0.945);
   border-color: rgba(255, 212, 70, 0.596);
   color: rgb(0, 0, 0)
 }
 
-#signup{
+#signup {
   background-color: rgba(0, 0, 0, 0.945);
   border-color: rgba(255, 255, 255, 0.767);
   color: rgb(253, 253, 253)
 }
-#cabecera{
+
+#cabecera {
   font-size: x-large;
 }

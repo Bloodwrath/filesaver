@@ -1,62 +1,63 @@
-// login.js
+import { app } from "./firebaseKey.js";
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-// Importa las funciones necesarias desde Firebase
-import { auth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from './firebaseKey.js';  // Asegúrate de que el path sea correcto
-
-// Funcionalidad para el login con Google
 document.addEventListener("DOMContentLoaded", function () {
-    const googleLoginBtn = document.getElementById("google-login");
+    console.log("Login.js cargado correctamente.");
 
-    // Añadimos un evento de clic para el botón de login con Google
-    googleLoginBtn.addEventListener("click", function (event) {
-        event.preventDefault();  // Prevenimos que el formulario se envíe automáticamente
+    // Esperar a que el header se cargue antes de obtener los elementos
+    setTimeout(() => {
+        const loginButton = document.getElementById("INICIAR SESION");
+        const googleLoginButton = document.getElementById("google-login");
+        const emailInput = document.getElementById("email"); // 🔹 Cambio de ID aquí
+        const passwordInput = document.getElementById("password");
 
-        // Creamos un nuevo proveedor de Google
+        if (!loginButton || !googleLoginButton || !emailInput || !passwordInput) {
+            console.error("Error: No se encontraron los elementos del formulario de login.");
+            return;
+        }
+
+        const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // Iniciamos el inicio de sesión con el proveedor de Google utilizando el popup
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                // El usuario ha iniciado sesión correctamente
-                const user = result.user;
-                console.log("Usuario autenticado con Google:", user);
+        // 🔹 Login con correo y contraseña
+        loginButton.addEventListener("click", function (event) {
+            event.preventDefault(); // Evita que el formulario se recargue
 
-                // Redirigimos al usuario a otra página después de un login exitoso
-                window.location.href = "/dashboard.html";  // Puedes cambiar la URL a la que desees redirigir
-            })
-            .catch((error) => {
-                // Manejo de errores
-                const errorMessage = error.message;
-                console.error("Error al iniciar sesión con Google:", errorMessage);
-                alert("Error al iniciar sesión con Google: " + errorMessage);  // Muestra un mensaje de error
-            });
-    });
+            const email = emailInput.value;
+            const password = passwordInput.value;
 
-    // Si tienes otros manejadores de eventos o lógica para el formulario de login, añádelos aquí
+            if (!email || !password) {
+                alert("Por favor, ingresa tu correo y contraseña.");
+                return;
+            }
 
-    // Ejemplo de cómo manejar el formulario de login tradicional con correo y contraseña
-    const form = document.querySelector("form");  // Asegúrate de que el selector del formulario sea correcto
-    form.addEventListener("submit", function (event) {
-        event.preventDefault();
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("Usuario autenticado:", userCredential.user);
+                    alert("Inicio de sesión exitoso.");
+                    window.location.href = "dashboard.html"; // Redirigir después del login
+                })
+                .catch((error) => {
+                    console.error("Error en el inicio de sesión:", error.message);
+                    alert("Error: " + error.message);
+                });
+        });
 
-        const email = document.getElementById("exampleDropdownFormEmail2").value;
-        const password = document.getElementById("exampleDropdownFormPassword2").value;
+        // 🔹 Login con Google
+        googleLoginButton.addEventListener("click", function (event) {
+            event.preventDefault(); // Evita que se envíe el formulario
 
-        // Llamar a Firebase Auth para iniciar sesión con email y contraseña
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // El usuario ha iniciado sesión correctamente
-                const user = userCredential.user;
-                console.log("Usuario autenticado:", user);
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    console.log("Usuario autenticado con Google:", result.user);
+                    alert("Inicio de sesión con Google exitoso.");
+                    window.location.href = "dashboard.html"; // Redirigir después del login
+                })
+                .catch((error) => {
+                    console.error("Error en el login con Google:", error.message);
+                    alert("Error: " + error.message);
+                });
+        });
 
-                // Redirigir a otra página después del login
-                window.location.href = "/dashboard.html";  // Cambia la URL según tu página de destino
-            })
-            .catch((error) => {
-                // Manejo de errores al intentar iniciar sesión con correo y contraseña
-                const errorMessage = error.message;
-                console.error("Error al iniciar sesión:", errorMessage);
-                alert("Error al iniciar sesión: " + errorMessage);
-            });
-    });
+    }, 500); // Se da un pequeño retraso para que el header cargue correctamente
 });

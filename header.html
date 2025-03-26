@@ -1,4 +1,5 @@
 <!--header-->
+<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
 <header class="p-3">
     <div class="container">
         <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
@@ -20,20 +21,20 @@
             <div class="dropdown">
                 <button id="login" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                     aria-expanded="false" data-bs-auto-close="outside">Login</button>
-                <form class="dropdown-menu p-4" id="login-form">
+                <form class="dropdown-menu p-4">
                     <div class="mb-3">
-                        <label for="exampleDropdownFormEmail2" class="form-label">Correo electronico</label>
-                        <input type="email" class="form-control" id="email" placeholder="email@example.com" required>
+                        <label for="email" class="form-label">Correo electronico</label>
+                        <input type="email" class="form-control" id="email" placeholder="email@example.com">
                     </div>
                     <div class="mb-3">
                         <label for="exampleDropdownFormPassword2" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" placeholder="Password" required>
+                        <input type="password" class="form-control" id="password" placeholder="Password">
                     </div>
-                    <button id="login-submit" type="submit" class="btn btn-primary">INICIAR SESION</button>
+                    <div class="mb-3">
+                        <button class="btn btn-primary" id="google-login">Iniciar Sesión con Google</button>
+                    </div>
+                    <button id="INICIAR SESION" type="submit" class="btn btn-primary">INICIAR SESION</button>
                 </form>
-                <div class="mb-3">
-                    <button id="google-login">Iniciar Sesión con Google</button>
-                </div>
             </div>
         </div>
 </header>
