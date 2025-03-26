@@ -1,6 +1,3 @@
-const formulario = document.getElementById('form_registro');
-const inputs = document.querySelectorAll('#form_registro input');
-
 const expresiones = {
     nombre: /^[a-zA-ZÀ-ÿ\s]{1,40}$/, // Letras y espacios, pueden llevar acentos.
     apellido: /^[a-zA-ZÀ-ÿ\s]{1,40}$/, // Letras y espacios, pueden llevar acentos.
