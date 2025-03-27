@@ -6,29 +6,16 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.text())
         .then(data => {
             document.getElementById("header").innerHTML = data;
-            inicializarAuth(); // Llamamos la autenticación después de cargar el header
+            verificarYActualizarHeader(); // Llamamos la función para que esté activa desde el inicio
         })
         .catch(error => console.error("Error al cargar el header:", error));
 });
-
-function inicializarAuth() {
-    const auth = getAuth(app);
-
-    // Detectar si el usuario está autenticado en Firebase
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            console.log("Usuario autenticado:", user);
-            verificarYActualizarHeader(user); // Si hay usuario, actualizar el header
-        } else {
-            console.log("Usuario no autenticado.");
-        }
-    });
-}
 
 // 🔹 Función para actualizar el header con los datos del usuario autenticado
 function verificarYActualizarHeader() {
     const auth = getAuth(app);
 
+    // Listener que detecta cambios en el estado de autenticación
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const header = document.getElementById("header");
