@@ -17,14 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById("header2").innerHTML = data;
-                    document.getElementById("logout").addEventListener("click", function () {
-                        signOut(getAuth())
-                            .then(() => {
-                                console.log("Usuario cerró sesión.");
-                                location.reload(); // Recargar la página para mostrar el header original
-                            })
-                            .catch((error) => console.error("Error al cerrar sesión:", error));
-                    });
                 })
                 .catch(error => console.error("Error al cargar header2.html:", error));
         } else {
@@ -38,3 +30,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 // 🔹 Función para verificar si el usuario está autenticado y actualizar el header
+
+document.getElementById("logout").addEventListener("click", function () {
+    signOut(getAuth())
+        .then(() => {
+            console.log("Usuario cerró sesión.");
+            location.reload(); // Recargar la página para mostrar el header original
+        })
+        .catch((error) => console.error("Error al cerrar sesión:", error));
+});
