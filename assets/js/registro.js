@@ -89,6 +89,8 @@ const validarPassword2 = () => {
     }
 }
 
+const inputs = document.querySelectorAll('input'); // Select all input elements
+
 inputs.forEach((input) => {
     input.addEventListener('keyup', validarFormulario);
     input.addEventListener('blur', validarFormulario);
