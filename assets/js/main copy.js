@@ -1,31 +1,36 @@
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 import { app } from "./firebaseKey.js";
 
-document.addEventListener("DOMContentLoaded", function () {
-    fetch("header.html")
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById("header").innerHTML = data;
-            inicializarAuth(); // Llamamos la autenticación después de cargar el header
-        })
-        .catch(error => console.error("Error al cargar el header:", error));
-});
+// 🔹 Función para actualizar el header
 
 function inicializarAuth() {
     const auth = getAuth(app);
 
+
     // Detectar si el usuario está autenticado en Firebase
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            console.log("Usuario autenticado:", user);
-            verificarYActualizarHeader(user); // Si hay usuario, actualizar el header
+            const idheader = document.getElementById("header");
+            idheader.id = "header2";
+            fetch("header2.html")
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById("header2").innerHTML = data;
+                    inicializarAuth(); // Si hay usuario, actualizar el header
+                });
         } else {
-            console.log("Usuario no autenticado.");
+            const idheader = document.getElementById("header2");
+            idheader.id = "header";
+            fetch("header.html")
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById("header").innerHTML = data;
+                    inicializarAuth();
+                });
         }
     });
 }
 
-// 🔹 Función para actualizar el header con los datos del usuario autenticado
 function verificarYActualizarHeader() {
     const auth = getAuth(app);
 
@@ -39,14 +44,6 @@ function verificarYActualizarHeader() {
                     .then(data => {
                         document.getElementById("header2").innerHTML = data;
                     });
-                document.getElementById("logout").addEventListener("click", function () {
-                    signOut(getAuth())
-                        .then(() => {
-                            console.log("Usuario cerró sesión.");
-                            location.reload(); // Recargar la página para mostrar el header original
-                        })
-                        .catch((error) => console.error("Error al cerrar sesión:", error));
-                });
             }
         } else {
             const header2 = document.getElementById("header2");
@@ -61,5 +58,3 @@ function verificarYActualizarHeader() {
         }
     });
 }
-
-
