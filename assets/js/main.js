@@ -48,10 +48,6 @@ function actualizarHeader(user) {
                         <span>Bienvenido, ${user.displayName || user.email}</span>
                         <button id="logout" class="btn btn-danger">Cerrar Sesión</button>
                     </div>
-                    </div>
-                    </div>
-        `;
-
         // Agregar funcionalidad al botón de cierre de sesión
         document.getElementById("logout").addEventListener("click", function () {
             signOut(getAuth())
