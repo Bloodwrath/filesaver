@@ -127,11 +127,13 @@ form-control {
     .formulario {
         grid-template-columns: 1fr;
     }
+
     .formulario__grupo-terminos,
     .formulario__mensaje,
     .formulario__grupo-btn-enviar {
         grid-column: 1;
     }
+
     .formulario__btn {
         width: 100%;
     }

@@ -14,7 +14,7 @@ header {
   color: rgb(0, 0, 0)
 }
 
-#signup {
+#registro {
   background-color: rgba(0, 0, 0, 0.945);
   border-color: rgba(255, 255, 255, 0.767);
   color: rgb(253, 253, 253)
@@ -22,4 +22,27 @@ header {
 
 #cabecera {
   font-size: x-large;
+}
+
+/* Asegura que el body ocupe toda la altura de la ventana */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* El contenido principal debe ocupar el espacio restante */
+main {
+  flex: 1;
+}
+
+/* El footer se mantiene al final */
+footer {
+  background-color: #343a40;
+  /* Color de fondo del footer */
+  color: white;
+  text-align: center;
+  padding: 10px 0;
 }
