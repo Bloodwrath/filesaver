@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     const usernameElement = document.getElementById("username");
                     if (usernameElement) {
                         usernameElement.textContent = user.displayName || user.email;
+                    } else {
+                        console.warn("El elemento con ID 'username' no se encontró en header2.html.");
                     }
 
                     const logoutButton = document.getElementById("logout");
