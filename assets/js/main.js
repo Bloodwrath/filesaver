@@ -7,6 +7,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const header = document.getElementById("header");
     const auth = getAuth(app);
 
+    // 🔹 Observador para detectar cambios en el DOM del header
+    const observer = new MutationObserver(() => {
+        const loginButton = document.getElementById("INICIAR SESION");
+        const googleLoginButton = document.getElementById("google-login");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+
+        if (loginButton && googleLoginButton && emailInput && passwordInput) {
+            observer.disconnect(); // Detener el observador una vez que los elementos se encuentren
+            initializeLoginEvents(loginButton, googleLoginButton, emailInput, passwordInput);
+        }
+    });
+
+    observer.observe(header, { childList: true, subtree: true });
+
     // 🔹 Actualizar el header según el estado de autenticación
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -46,18 +61,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error("Error al cargar header.html:", error));
         }
     });
+});
 
-    // 🔹 Manejo del formulario de login
-    const loginButton = document.getElementById("INICIAR SESION");
-    const googleLoginButton = document.getElementById("google-login");
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-
-    if (!loginButton || !googleLoginButton || !emailInput || !passwordInput) {
-        console.error("Error: No se encontraron los elementos del formulario de login.");
-        return;
-    }
-
+// 🔹 Función para inicializar los eventos del formulario de login
+function initializeLoginEvents(loginButton, googleLoginButton, emailInput, passwordInput) {
+    const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
     // 🔹 Login con correo y contraseña
@@ -99,5 +107,5 @@ document.addEventListener("DOMContentLoaded", function () {
                 alert("Error: " + error.message);
             });
     });
-});
+}
 
