@@ -44,8 +44,7 @@ async function subirPoliza() {
         // 🔹 Subir archivo a Firebase Storage
         const storageRef = ref(storage, `polizas/${archivo.name}`); // Ruta en Firebase Storage
         const snapshot = await uploadBytes(storageRef, archivo); // Subir archivo
-        const downloadURL = await getDownloadURL(snapshot.ref); // Obtener URL de descarga
-
+        const downloadURL = await getDownloadURL(snapshot.ref); // Obtener URL de descarga;
         console.log("Archivo subido con éxito:", downloadURL);
 
         // 🔹 Guardar metadatos en Firestore
