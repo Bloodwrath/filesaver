@@ -162,17 +162,25 @@ async function mostrarArchivos() {
     }
 }
 
-// 🔹 Función para extraer el número de póliza del texto
-function extraerNumeroPolizaBanorte(texto) {
-    // Buscar la palabra "Inciso" y extraer el número que sigue
-    const regex = /Inciso\s+(\d+)/; // Expresión regular para buscar "Inciso" seguido de un número
-    const match = texto.match(regex); // Buscar coincidencias en el texto
+// 🔹 Función para extraer el número de póliza de Banorte
+function extraerdatosbanorte(texto) {
+    const regex = /Inciso\s+(\d+)/; // Buscar "Inciso" seguido de un número
+    const match = texto.match(regex);
+    return match && match[1] ? match[1] : null; // Retornar el número de póliza o null
+}
 
-    if (match && match[1]) {
-        return match[1]; // Retornar el número de póliza encontrado
-    } else {
-        return null; // Retornar null si no se encuentra el número
-    }
+// 🔹 Función para extraer el número de póliza de Afirme
+function extraerdatosafirme(texto) {
+    const regex = /(\d{4}-\d{8}-\d{2})\s+Fecha de Emisión:/; // Buscar el número de póliza seguido de "Fecha de Emisión:"
+    const match = texto.match(regex);
+    return match && match[1] ? match[1] : null; // Retornar el número de póliza o null
+}
+
+// 🔹 Función para extraer el número de póliza de Quálitas
+function extraerdatosqualitas(texto) {
+    const regex = /PÓLIZA(?:\s+\S+){2}\s+(\d+)/; // Buscar "PÓLIZA" seguido de dos palabras y capturar el número
+    const match = texto.match(regex);
+    return match && match[1] ? match[1] : null; // Retornar el número de póliza o null
 }
 
 // Evento para manejar la selección del archivo
@@ -185,16 +193,35 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
             const contenidoPDF = await leerContenidoPDF(archivo);
             console.log("Contenido del PDF:", contenidoPDF); // Mostrar el contenido en la consola
 
-            // Extraer el número de póliza
-            const numeroPoliza = extraerNumeroPolizaBanorte(contenidoPDF);
-
-            if (numeroPoliza) {
-                console.log("Número de Póliza encontrado:", numeroPoliza); // Mostrar el número de póliza en la consola
-                alert("Número de Póliza encontrado: " + numeroPoliza); // Mostrar el número de póliza en una alerta
-            } else {
-                console.warn("No se encontró el número de póliza en el archivo.");
-                alert("No se encontró el número de póliza en el archivo.");
+            // Intentar extraer datos de Banorte
+            const numeroPolizaBanorte = extraerdatosbanorte(contenidoPDF);
+            if (numeroPolizaBanorte) {
+                console.log("Número de Póliza encontrado (Banorte):", numeroPolizaBanorte);
+                document.getElementById("aseguradora").value = "banorte"; // Cambiar aseguradora a Banorte
+                alert("Número de Póliza encontrado (Banorte): " + numeroPolizaBanorte);
+                return; // Salir si se encuentra la póliza
             }
+
+            // Intentar extraer datos de Afirme
+            const numeroPolizaAfirme = extraerdatosafirme(contenidoPDF);
+            if (numeroPolizaAfirme) {
+                console.log("Número de Póliza encontrado (Afirme):", numeroPolizaAfirme);
+                document.getElementById("aseguradora").value = "afirme"; // Cambiar aseguradora a Afirme
+                alert("Número de Póliza encontrado (Afirme): " + numeroPolizaAfirme);
+                return; // Salir si se encuentra la póliza
+            }
+
+            // Intentar extraer datos de Quálitas
+            const numeroPolizaQualitas = extraerdatosqualitas(contenidoPDF);
+            if (numeroPolizaQualitas) {
+                console.log("Número de Póliza encontrado (Quálitas):", numeroPolizaQualitas);
+                document.getElementById("aseguradora").value = "qualitas"; // Cambiar aseguradora a Quálitas
+                alert("Número de Póliza encontrado (Quálitas): " + numeroPolizaQualitas);
+                return; // Salir si se encuentra la póliza
+            }
+
+            // Si no se encuentra ninguna póliza
+            alert("No se encontró ninguna póliza válida en el archivo.");
         } catch (error) {
             console.error("Error al leer el PDF:", error);
             alert("Hubo un error al leer el archivo PDF.");
