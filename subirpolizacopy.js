@@ -1,4 +1,4 @@
-//1.24
+//1.25
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -162,14 +162,39 @@ async function mostrarArchivos() {
     }
 }
 
+// 🔹 Función para extraer el número de póliza del texto
+function extraerNumeroPolizaBanorte(texto) {
+    // Buscar la palabra "Inciso" y extraer el número que sigue
+    const regex = /Inciso\s+(\d+)/; // Expresión regular para buscar "Inciso" seguido de un número
+    const match = texto.match(regex); // Buscar coincidencias en el texto
+
+    if (match && match[1]) {
+        return match[1]; // Retornar el número de póliza encontrado
+    } else {
+        return null; // Retornar null si no se encuentra el número
+    }
+}
+
 // Evento para manejar la selección del archivo
 document.getElementById("archivo_poliza").addEventListener("change", async (event) => {
     const archivo = event.target.files[0];
 
     if (archivo && archivo.type === "application/pdf") {
         try {
+            // Leer el contenido del PDF
             const contenidoPDF = await leerContenidoPDF(archivo);
             console.log("Contenido del PDF:", contenidoPDF); // Mostrar el contenido en la consola
+
+            // Extraer el número de póliza
+            const numeroPoliza = extraerNumeroPolizaBanorte(contenidoPDF);
+
+            if (numeroPoliza) {
+                console.log("Número de Póliza encontrado:", numeroPoliza); // Mostrar el número de póliza en la consola
+                alert("Número de Póliza encontrado: " + numeroPoliza); // Mostrar el número de póliza en una alerta
+            } else {
+                console.warn("No se encontró el número de póliza en el archivo.");
+                alert("No se encontró el número de póliza en el archivo.");
+            }
         } catch (error) {
             console.error("Error al leer el PDF:", error);
             alert("Hubo un error al leer el archivo PDF.");
