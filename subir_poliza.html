@@ -23,7 +23,7 @@
         <h1>Subir Póliza de Seguro</h1>
         <p>Selecciona la aseguradora, sube el archivo PDF de la póliza y revisa los datos extraídos.</p>
 
-        <form id="form_subir_poliza" action="/upload_poliza" method="POST" enctype="multipart/form-data">
+        <form id="form_subir_poliza" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="aseguradora" class="form-label">Aseguradora:</label>
                 <select id="aseguradora" name="aseguradora" class="form-select" required>
@@ -40,36 +40,17 @@
                     accept="application/pdf" required>
             </div>
 
-            <h3>Datos Extraídos</h3>
-            <div class="mb-3">
-                <label for="numero_poliza" class="form-label">Número de Póliza:</label>
-                <input type="text" id="numero_poliza" class="form-control" placeholder="Número de Póliza" readonly>
-            </div>
-
-            <div class="mb-3">
-                <label for="nombre_asegurado" class="form-label">Nombre del Asegurado:</label>
-                <input type="text" id="nombre_asegurado" class="form-control" placeholder="Nombre del Asegurado"
-                    readonly>
-            </div>
-
-            <div class="mb-3">
-                <label for="prima_total" class="form-label">Prima Total:</label>
-                <input type="text" id="prima_total" class="form-control" placeholder="Prima Total" readonly>
-            </div>
-
-            <div class="mb-3">
-                <label for="prima_neta" class="form-label">Prima Neta:</label>
-                <input type="text" id="prima_neta" class="form-control" placeholder="Prima Neta" readonly>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Subir Póliza</button>
+            <button type="button" id="btn_subir" class="btn btn-primary">Subir Póliza</button>
         </form>
+
+        <!-- Nuevo botón para mostrar archivos -->
+        <button type="button" id="btn_mostrar_archivos" class="btn btn-secondary mt-3">Mostrar Mis Archivos</button>
     </main>
 
     <!-- FOOTER -->
     <footer class="page-footer dark">
         <div class="footer-copyright">
-            <p>© copyright FILESAVER S.A. DE C.V.</p>
+            <p>© copyright FILESAVER S.A. DE C.V. 1.25</p>
         </div>
     </footer>
 
@@ -77,8 +58,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+    <script type="module" src="assets/js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
     <script type="module" src="assets/js/firebaseKey.js"></script>
-    <script type="module" src="assets/js/main.js" defer></script>
+    <script type="module" src="subirpolizacopy.js" defer></script>
 </body>
 
 </html>
