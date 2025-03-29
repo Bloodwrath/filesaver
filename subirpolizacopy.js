@@ -3,6 +3,9 @@ import { getFirestore, collection, addDoc, query, where, getDocs } from "https:/
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 import { app } from "./assets/js/firebaseKey.js";
 
+// Importar PDF.js
+import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js";
+
 // 🔹 Inicializar Firebase
 const auth = getAuth(app);
 const db = getFirestore(app); // Inicializa Firestore Database
@@ -28,6 +31,42 @@ function convertirArchivoABase64(archivo) {
         reader.onload = () => resolve(reader.result.split(",")[1]); // Obtener solo la parte Base64
         reader.onerror = (error) => reject(error);
         reader.readAsDataURL(archivo);
+    });
+}
+
+// Función para leer el contenido del archivo PDF
+async function leerContenidoPDF(archivo) {
+    const reader = new FileReader();
+
+    // Leer el archivo como ArrayBuffer
+    reader.readAsArrayBuffer(archivo);
+
+    return new Promise((resolve, reject) => {
+        reader.onload = async () => {
+            try {
+                // Cargar el archivo PDF con PDF.js
+                const pdf = await pdfjsLib.getDocument({ data: reader.result }).promise;
+
+                let textoCompleto = "";
+
+                // Iterar por cada página del PDF
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const pagina = await pdf.getPage(i);
+                    const texto = await pagina.getTextContent();
+
+                    // Extraer el texto de la página
+                    texto.items.forEach((item) => {
+                        textoCompleto += item.str + " ";
+                    });
+                }
+
+                resolve(textoCompleto); // Devolver el texto completo del PDF
+            } catch (error) {
+                reject(error); // Manejar errores
+            }
+        };
+
+        reader.onerror = (error) => reject(error); // Manejar errores de lectura
     });
 }
 
@@ -118,6 +157,24 @@ async function mostrarArchivos() {
         alert("Hubo un error al obtener tus archivos. Por favor, inténtalo de nuevo.");
     }
 }
+
+// Evento para manejar la selección del archivo
+document.getElementById("archivo_poliza").addEventListener("change", async (event) => {
+    const archivo = event.target.files[0];
+
+    if (archivo && archivo.type === "application/pdf") {
+        try {
+            const contenidoPDF = await leerContenidoPDF(archivo);
+            console.log("Contenido del PDF:", contenidoPDF); // Mostrar el contenido en la consola
+            alert("Contenido del PDF:\n" + contenidoPDF); // Mostrar el contenido en una alerta
+        } catch (error) {
+            console.error("Error al leer el PDF:", error);
+            alert("Hubo un error al leer el archivo PDF.");
+        }
+    } else {
+        alert("Por favor, selecciona un archivo PDF válido.");
+    }
+});
 
 // 🔹 Agregar evento al botón de subida
 document.getElementById("btn_subir").addEventListener("click", subirPoliza);
