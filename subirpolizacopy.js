@@ -6,6 +6,9 @@ import { app } from "./assets/js/firebaseKey.js";
 // Importar PDF.js
 import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js";
 
+// Configurar el worker de PDF.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
 // 🔹 Inicializar Firebase
 const auth = getAuth(app);
 const db = getFirestore(app); // Inicializa Firestore Database
