@@ -69,7 +69,7 @@ async function subirPoliza() {
     }
 }
 
-// 🔹 Función para mostrar los archivos del usuario autenticado
+// 🔹 Función para mostrar los archivos del usuario autenticado y permitir la descarga
 async function mostrarArchivos() {
     if (!currentUser) {
         alert("Debes iniciar sesión para ver tus archivos.");
@@ -87,15 +87,32 @@ async function mostrarArchivos() {
             return;
         }
 
-        // 🔹 Crear una lista de archivos
-        let listaArchivos = "Tus archivos:\n\n";
+        // 🔹 Crear una lista de archivos con enlaces de descarga
+        let listaArchivosHTML = "<h3>Tus archivos:</h3><ul>";
         querySnapshot.forEach((doc) => {
             const datos = doc.data();
-            listaArchivos += `- Aseguradora: ${datos.aseguradora}\n  Fecha: ${datos.fechaSubida}\n\n`;
-        });
+            const base64Archivo = datos.urlArchivo; // Recuperar el archivo en Base64
+            const aseguradora = datos.aseguradora;
+            const fecha = datos.fechaSubida;
 
-        // 🔹 Mostrar la lista en una ventana emergente
-        alert(listaArchivos);
+            // Crear un enlace de descarga para cada archivo
+            listaArchivosHTML += `
+                <li>
+                    <strong>Aseguradora:</strong> ${aseguradora}<br>
+                    <strong>Fecha:</strong> ${fecha}<br>
+                    <a href="data:application/pdf;base64,${base64Archivo}" download="poliza_${aseguradora}.pdf">
+                        Descargar PDF
+                    </a>
+                </li>
+                <br>
+            `;
+        });
+        listaArchivosHTML += "</ul>";
+
+        // Mostrar los enlaces en una ventana emergente o modal
+        const ventanaEmergente = window.open("", "_blank", "width=600,height=400");
+        ventanaEmergente.document.write(listaArchivosHTML);
+        ventanaEmergente.document.close();
     } catch (error) {
         console.error("Error al obtener los archivos:", error);
         alert("Hubo un error al obtener tus archivos. Por favor, inténtalo de nuevo.");
