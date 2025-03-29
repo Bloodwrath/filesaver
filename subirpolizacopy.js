@@ -1,4 +1,4 @@
-// 🔹 Importar Firebase
+// Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 import { app } from "./assets/js/firebaseKey.js";
@@ -169,7 +169,6 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
         try {
             const contenidoPDF = await leerContenidoPDF(archivo);
             console.log("Contenido del PDF:", contenidoPDF); // Mostrar el contenido en la consola
-            alert("Contenido del PDF:\n" + contenidoPDF); // Mostrar el contenido en una alerta
         } catch (error) {
             console.error("Error al leer el PDF:", error);
             alert("Hubo un error al leer el archivo PDF.");
