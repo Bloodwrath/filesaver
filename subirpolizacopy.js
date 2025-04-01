@@ -1,4 +1,5 @@
-//1.3
+//1.31.2024
+//2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -84,6 +85,7 @@ async function subirPoliza() {
     const aseguradora = document.getElementById("aseguradora").value;
     const archivoInput = document.getElementById("archivo_poliza");
     const primatotal = document.getElementById("primaTotal").value;
+    const primaneta = document.getElementById("primaNeta").value; // Obtener el valor de primaNeta
     const archivo = archivoInput.files[0];
 
     // Validar que se haya seleccionado una aseguradora y un archivo
@@ -103,7 +105,7 @@ async function subirPoliza() {
             urlArchivo: base64Archivo, // Guardar el archivo en Base64
             NIV: "", // Provide a default value or remove this line if not needed
             primaTotal: primatotal, // Guardar el valor de primaTotal
-            primaNeta: "", // Provide a default value or remove this line if not needed
+            primaNeta: primaneta, // Provide a default value or remove this line if not needed
             fechaSubida: new Date().toISOString(),
             usuario: currentUser.email, // Guardar el correo del usuario autenticado
         });
@@ -180,10 +182,16 @@ function extraerdatosafirme(texto) {
     return match && match[1] ? match[1] : null; // Retornar el número de póliza o null
 }
 
-function extraerPrimaTotalqualitas(texto) {
+function extraerprimatotalqualitas(texto) {
     const regex = /IMPORTE TOTAL\.\s+([\d,]+\.\d+)\s+PESOS/; // Buscar "IMPORTE TOTAL." seguido de un número y "PESOS"
     const match = texto.match(regex);
     return match && match[1] ? match[1].replace(/,/g, "") : null; // Retornar el número de póliza o null
+}
+
+function extraerprimanetaqualitas(texto) {
+    const regex = /I\.V\.A\.\s+([\d,]+\.\d+)\s+IMPORTE TOTAL\./; // Buscar el número entre "I.V.A." y "IMPORTE TOTAL."
+    const match = texto.match(regex);
+    return match && match[1] ? match[1].replace(/,/g, "") : null; // Convertir el número a float
 }
 
 // 🔹 Función para extraer el número de póliza de Quálitas
@@ -203,35 +211,40 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
             const contenidoPDF = await leerContenidoPDF(archivo);
             console.log("Contenido del PDF:", contenidoPDF); // Mostrar el contenido en la consola
 
-            // Intentar extraer datos de Banorte
-            const numeroPolizaBanorte = extraerdatosbanorte(contenidoPDF);
-            if (numeroPolizaBanorte) {
-                console.log("Número de Póliza encontrado (Banorte):", numeroPolizaBanorte);
-                document.getElementById("aseguradora").value = "banorte"; // Cambiar aseguradora a Banorte
+            // Identificar la aseguradora
+            let aseguradora = null;
 
-                return; // Salir si se encuentra la póliza
+            if (extraerdatosbanorte(contenidoPDF)) {
+                aseguradora = "Banorte";
+            } else if (extraerdatosafirme(contenidoPDF)) {
+                aseguradora = "Afirme";
+            } else if (extraerdatosqualitas(contenidoPDF)) {
+                aseguradora = "Quálitas";
             }
 
-            // Intentar extraer datos de Afirme
-            const numeroPolizaAfirme = extraerdatosafirme(contenidoPDF);
-            if (numeroPolizaAfirme) {
-                console.log("Número de Póliza encontrado (Afirme):", numeroPolizaAfirme);
-                document.getElementById("aseguradora").value = "afirme"; // Cambiar aseguradora a Afirme
-                alert("Número de Póliza encontrado (Afirme): " + numeroPolizaAfirme);
-                return; // Salir si se encuentra la póliza
-            }
+            if (aseguradora) {
+                console.log("Aseguradora identificada:", aseguradora);
+                document.getElementById("aseguradora").value = aseguradora.toLowerCase(); // Actualizar el campo aseguradora
 
-            // Intentar extraer datos de Quálitas
-            const numeroPolizaQualitas = extraerdatosqualitas(contenidoPDF);
-            if (numeroPolizaQualitas) {
-                console.log("Número de Póliza encontrado (Quálitas):", numeroPolizaQualitas);
-                document.getElementById("aseguradora").value = "qualitas"; // Cambiar aseguradora a Quálitas
-                document.getElementById("primaTotal").value = extraerPrimaTotalqualitas(contenidoPDF); // Extraer prima total
-                return; // Salir si se encuentra la póliza
-            }
+                // Extraer datos específicos según la aseguradora
+                if (aseguradora === "Banorte") {
+                    const numeroPoliza = extraerdatosbanorte(contenidoPDF);
+                    document.getElementById("poliza").value = numeroPoliza;
+                } else if (aseguradora === "Afirme") {
+                    const numeroPoliza = extraerdatosafirme(contenidoPDF);
+                    document.getElementById("poliza").value = numeroPoliza;
+                } else if (aseguradora === "Quálitas") {
+                    const numeroPoliza = extraerdatosqualitas(contenidoPDF);
+                    const primaTotal = extraerprimatotalqualitas(contenidoPDF);
+                    const primaNeta = extraerprimanetaqualitas(contenidoPDF);
 
-            // Si no se encuentra ninguna póliza
-            alert("No se encontró ninguna póliza válida en el archivo.");
+                    document.getElementById("poliza").value = numeroPoliza;
+                    document.getElementById("primaTotal").value = primaTotal;
+                    document.getElementById("primaNeta").value = primaNeta;
+                }
+            } else {
+                alert("No se pudo identificar la aseguradora en el archivo.");
+            }
         } catch (error) {
             console.error("Error al leer el PDF:", error);
             alert("Hubo un error al leer el archivo PDF.");
