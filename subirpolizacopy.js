@@ -1,4 +1,4 @@
-//1.32.2024
+//1.33.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -194,6 +194,12 @@ function extraerprimanetaqualitas(texto) {
     return match && match[1] ? match[1].replace(/,/g, "") : null; // Convertir el número a float
 }
 
+function extraerPrimaNetaQualitas(texto) {
+    const regex = /Subtotal I\.V\.A\.\s+([\d,]+\.\d+)\s+IMPORTE TOTAL\./; // Buscar el número entre "Subtotal I.V.A." y "IMPORTE TOTAL."
+    const match = texto.match(regex);
+    return match && match[1] ? parseFloat(match[1].replace(/,/g, "")) : null; // Convertir el número a float
+}
+
 // 🔹 Función para extraer el número de póliza de Qualitas
 function extraerdatosqualitas(texto) {
     const regex = /PÓLIZA(?:\s+\S+){2}\s+(\d+)/; // Buscar "PÓLIZA" seguido de dos palabras y capturar el número
@@ -236,13 +242,10 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                 } else if (aseguradora === "Qualitas") {
                     const numeroPoliza = extraerdatosqualitas(contenidoPDF);
                     console.log("numero de poliza", numeroPoliza);
-                    const primaTotal = extraerprimatotalqualitas(contenidoPDF);
-                    console.log("primatotal", primaTotal);
                     const primaNeta = extraerprimanetaqualitas(contenidoPDF);
-                    console.log("primatotal", match);
+                    console.log("primatotal", primaNeta);
 
                     document.getElementById("poliza").value = numeroPoliza;
-                    document.getElementById("primaTotal").value = primaTotal;
                     document.getElementById("primaNeta").value = primaNeta;
                 }
             } else {
