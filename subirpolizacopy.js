@@ -1,4 +1,4 @@
-//1.31.2024
+//1.32.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -194,11 +194,11 @@ function extraerprimanetaqualitas(texto) {
     return match && match[1] ? match[1].replace(/,/g, "") : null; // Convertir el número a float
 }
 
-// 🔹 Función para extraer el número de póliza de Quálitas
+// 🔹 Función para extraer el número de póliza de Qualitas
 function extraerdatosqualitas(texto) {
     const regex = /PÓLIZA(?:\s+\S+){2}\s+(\d+)/; // Buscar "PÓLIZA" seguido de dos palabras y capturar el número
-    const match = texto.match(regex);
-    return match && match[1] ? match[1] : null; // Retornar el número de póliza o null
+    const match = texto.match(regex); // Retornar el número de póliza o null
+    return match && match[1] ? match[1] : null;
 }
 
 // Evento para manejar la selección del archivo
@@ -219,7 +219,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
             } else if (extraerdatosafirme(contenidoPDF)) {
                 aseguradora = "Afirme";
             } else if (extraerdatosqualitas(contenidoPDF)) {
-                aseguradora = "Quálitas";
+                aseguradora = "Qualitas";
             }
 
             if (aseguradora) {
@@ -233,10 +233,13 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                 } else if (aseguradora === "Afirme") {
                     const numeroPoliza = extraerdatosafirme(contenidoPDF);
                     document.getElementById("poliza").value = numeroPoliza;
-                } else if (aseguradora === "Quálitas") {
+                } else if (aseguradora === "Qualitas") {
                     const numeroPoliza = extraerdatosqualitas(contenidoPDF);
+                    console.log("numero de poliza", numeroPoliza);
                     const primaTotal = extraerprimatotalqualitas(contenidoPDF);
+                    console.log("primatotal", primaTotal);
                     const primaNeta = extraerprimanetaqualitas(contenidoPDF);
+                    console.log("primatotal", match);
 
                     document.getElementById("poliza").value = numeroPoliza;
                     document.getElementById("primaTotal").value = primaTotal;
