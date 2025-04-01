@@ -83,6 +83,7 @@ async function subirPoliza() {
 
     const aseguradora = document.getElementById("aseguradora").value;
     const archivoInput = document.getElementById("archivo_poliza");
+    const primatotal = document.getElementById("primaTotal").value;
     const archivo = archivoInput.files[0];
 
     // Validar que se haya seleccionado una aseguradora y un archivo
@@ -100,6 +101,9 @@ async function subirPoliza() {
         const docRef = await addDoc(collection(db, "polizas"), {
             aseguradora: aseguradora,
             urlArchivo: base64Archivo, // Guardar el archivo en Base64
+            NIV: "", // Provide a default value or remove this line if not needed
+            primaTotal: primatotal, // Guardar el valor de primaTotal
+            primaNeta: "", // Provide a default value or remove this line if not needed
             fechaSubida: new Date().toISOString(),
             usuario: currentUser.email, // Guardar el correo del usuario autenticado
         });
@@ -176,6 +180,12 @@ function extraerdatosafirme(texto) {
     return match && match[1] ? match[1] : null; // Retornar el número de póliza o null
 }
 
+function extraerPrimaTotalqualitas(texto) {
+    const regex = /IMPORTE TOTAL\.\s+([\d,]+\.\d+)\s+PESOS/; // Buscar "IMPORTE TOTAL." seguido de un número y "PESOS"
+    const match = texto.match(regex);
+    return match && match[1] ? match[1].replace(/,/g, "") : null; // Retornar el número de póliza o null
+}
+
 // 🔹 Función para extraer el número de póliza de Quálitas
 function extraerdatosqualitas(texto) {
     const regex = /PÓLIZA(?:\s+\S+){2}\s+(\d+)/; // Buscar "PÓLIZA" seguido de dos palabras y capturar el número
@@ -198,7 +208,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
             if (numeroPolizaBanorte) {
                 console.log("Número de Póliza encontrado (Banorte):", numeroPolizaBanorte);
                 document.getElementById("aseguradora").value = "banorte"; // Cambiar aseguradora a Banorte
-                alert("Número de Póliza encontrado (Banorte): " + numeroPolizaBanorte);
+
                 return; // Salir si se encuentra la póliza
             }
 
@@ -216,7 +226,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
             if (numeroPolizaQualitas) {
                 console.log("Número de Póliza encontrado (Quálitas):", numeroPolizaQualitas);
                 document.getElementById("aseguradora").value = "qualitas"; // Cambiar aseguradora a Quálitas
-                alert("Número de Póliza encontrado (Quálitas): " + numeroPolizaQualitas);
+                document.getElementById("primaTotal").value = extraerPrimaTotalqualitas(contenidoPDF); // Extraer prima total
                 return; // Salir si se encuentra la póliza
             }
 

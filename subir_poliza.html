@@ -25,22 +25,24 @@
 
         <form id="form_subir_poliza" enctype="multipart/form-data">
             <div class="mb-3">
-                <label for="aseguradora" class="form-label">Aseguradora:</label>
-                <select id="aseguradora" name="aseguradora" class="form-select" required>
-                    <option value="">Selecciona una aseguradora</option>
-                    <option value="banorte">Banorte</option>
-                    <option value="afirme">Afirme</option>
-                    <option value="qualitas">Qualitas</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
                 <label for="archivo_poliza" class="form-label">Archivo de Póliza (PDF):</label>
                 <input type="file" id="archivo_poliza" name="archivo_poliza" class="form-control"
                     accept="application/pdf" required>
             </div>
 
-            <button type="button" id="btn_subir" class="btn btn-primary">Subir Póliza</button>
+            <div class="mb-3">
+                <label for="aseguradora" class="form-label">Aseguradora:</label>
+                <input type="text" id="aseguradora" name="aseguradora" class="form-label" placeholder="Aseguradora"
+                    required>
+            </div>
+
+            <div class="mb-3">
+                <label for="poliza" class="form-label">Número de Póliza:</label>
+                <input type="text" id="poliza" name="poliza" class="form-label" placeholder="Número de Póliza" required>
+
+
+
+                <button type="button" id="btn_subir" class="btn btn-primary">Subir Póliza</button>
         </form>
 
         <!-- Nuevo botón para mostrar archivos -->
