@@ -1,4 +1,4 @@
-//1.342.2024
+//1.343.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -84,8 +84,8 @@ async function subirPoliza() {
 
     const aseguradora = document.getElementById("aseguradora").value;
     const archivoInput = document.getElementById("archivo_poliza");
-    const primatotal = document.getElementById("primaTotal").value;
-    const primaneta = document.getElementById("primaNeta").value; // Obtener el valor de primaNeta
+    const primatotal = parseFloat(document.getElementById("primaTotal").value.replace(/,/g, '')); // Eliminar comas
+    const primaneta = parseFloat(document.getElementById("primaNeta").value.replace(/,/g, '')); // Eliminar comas
     const serie = document.getElementById("niv").value; // Obtener el valor de NIV
     const nombreasegurado = document.getElementById("nombreasegurado").value; // Obtener el nombre asegurado
     const archivo = archivoInput.files[0];
@@ -327,8 +327,8 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     const nombre = extraernombre(contenidoPDF); // Obtener el nombre de la póliza 
                     console.log("serie", serie);
                     document.getElementById("poliza").value = numeroPoliza;
-                    document.getElementById("primaTotal").value = "$" + primatotal;
-                    document.getElementById("primaNeta").value = "$" + primaneta;
+                    document.getElementById("primaTotal").value = primatotal;
+                    document.getElementById("primaNeta").value = primaneta;
                     document.getElementById("niv").value = serie; // Actualizar el campo serie
                     document.getElementById("nombreasegurado").value = nombre; // Actualizar el campo nombre
                 }
