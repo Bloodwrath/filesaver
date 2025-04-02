@@ -1,4 +1,4 @@
-//1.341.2024
+//1.342.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -22,11 +22,11 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("Usuario autenticado:", user.email);
         currentUser = user; // Guardar el usuario autenticado
-    } //else {
-    //console.warn("No hay un usuario autenticado. Redirigiendo a la página de inicio de sesión...");
-    //alert("Debes iniciar sesión para subir una póliza o ver tus archivos.");
-    //window.location.href = "index.html"; // Redirigir a la página de inicio de sesión
-    //}
+    } else {
+        console.warn("No hay un usuario autenticado. Redirigiendo a la página de inicio de sesión...");
+        alert("Debes iniciar sesión para subir una póliza o ver tus archivos.");
+        window.location.href = "index.html"; // Redirigir a la página de inicio de sesión
+    }
 });
 
 // 🔹 Función para convertir un archivo a Base64
@@ -77,10 +77,10 @@ async function leerContenidoPDF(archivo) {
 
 // 🔹 Función para manejar la subida de archivos
 async function subirPoliza() {
-    //    if (!currentUser) {
-    //        alert("Debes iniciar sesión para subir una póliza.");
-    //        return;
-    //    }
+    if (!currentUser) {
+        alert("Debes iniciar sesión para subir una póliza.");
+        return;
+    }
 
     const aseguradora = document.getElementById("aseguradora").value;
     const archivoInput = document.getElementById("archivo_poliza");
