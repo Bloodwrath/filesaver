@@ -1,4 +1,4 @@
-//1.34.2024
+//1.341.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -86,6 +86,8 @@ async function subirPoliza() {
     const archivoInput = document.getElementById("archivo_poliza");
     const primatotal = parseFloat(document.getElementById("primaTotal").value);
     const primaneta = parseFloat(document.getElementById("primaNeta").value); // Obtener el valor de primaNeta
+    const serie = document.getElementById("niv").value; // Obtener el valor de NIV
+    const nombreasegurado = document.getElementById("nombreasegurado").value; // Obtener el nombre asegurado
     const archivo = archivoInput.files[0];
 
     // Validar que se haya seleccionado una aseguradora y un archivo
@@ -103,11 +105,12 @@ async function subirPoliza() {
         const docRef = await addDoc(collection(db, "polizas"), {
             aseguradora: aseguradora,
             urlArchivo: base64Archivo, // Guardar el archivo en Base64
-            NIV: "", // Provide a default value or remove this line if not needed
-            primaNeta: primatotal, // Guardar el valor de primaNeta
+            NIV: serie, // Provide a default value or remove this line if not needed
+            primaTotal: primatotal, // Guardar el valor de primaNeta
             primaNeta: primaneta, // Provide a default value or remove this line if not needed
             fechaSubida: new Date().toISOString(),
-            usuario: currentUser.email, // Guardar el correo del usuario autenticado
+            usuario: currentUser.email,// Guardar el correo del usuario autenticado
+            nombreAsegurado: nombreasegurado // Guardar el nombre asegurado
         });
 
         alert("Póliza subida con éxito.");
@@ -265,6 +268,26 @@ function extraerNumeroSerie(texto) {
     return null; // Retornar null si no se encuentra ningún número de serie
 }
 
+function extraernombre(texto) {
+    const regexDesdeHasta = /Desde las 12:00 P\.M\. del:\s+Hasta las 12:00 P\.M\. del:\s+([A-Z\s]+?)\s+\d+/i; // Nombre entre "Desde las 12:00 P.M. del:" y el primer número
+    const regexIncisoInformacion = /INCISO ENDOSO PÓLIZA\s+.*?\s+([A-Z\s]+?)\s+INFORMACIÓN IMPORTANTE/i; // Nombre entre "INCISO ENDOSO PÓLIZA" y "INFORMACIÓN IMPORTANTE"
+
+    const matchDesdeHasta = texto.match(regexDesdeHasta); // Buscar el nombre con referencia "Desde las 12:00 P.M. del:" y el primer número
+    const matchIncisoInformacion = texto.match(regexIncisoInformacion); // Buscar el nombre con referencia "INCISO ENDOSO PÓLIZA" y "INFORMACIÓN IMPORTANTE"
+
+    if (matchDesdeHasta) {
+        console.log("Nombre encontrado (Desde-Hasta):", matchDesdeHasta[1]);
+        return matchDesdeHasta[1].trim(); // Retornar el nombre encontrado
+    }
+    if (matchIncisoInformacion) {
+        console.log("Nombre encontrado (Inciso-Información):", matchIncisoInformacion[1]);
+        return matchIncisoInformacion[1].trim(); // Retornar el nombre encontrado
+    }
+
+    console.warn("No se encontró el nombre en el texto.");
+    return null; // Retornar null si no se encuentra ningún nombre
+}
+
 // Evento para manejar la selección del archivo
 document.getElementById("archivo_poliza").addEventListener("change", async (event) => {
     const archivo = event.target.files[0];
@@ -301,11 +324,13 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     const primatotal = extraerprimatotalqualitas(contenidoPDF);
                     const primaneta = extraerprimanetaqualitas(contenidoPDF);
                     const serie = extraerNumeroSerie(contenidoPDF);
+                    const nombre = extraernombre(contenidoPDF); // Obtener el nombre de la póliza 
                     console.log("serie", serie);
                     document.getElementById("poliza").value = numeroPoliza;
                     document.getElementById("primaTotal").value = "$" + primatotal;
                     document.getElementById("primaNeta").value = "$" + primaneta;
                     document.getElementById("niv").value = serie; // Actualizar el campo serie
+                    document.getElementById("nombreasegurado").value = nombre; // Actualizar el campo nombre
                 }
             } else {
                 alert("No se pudo identificar la aseguradora en el archivo.");
