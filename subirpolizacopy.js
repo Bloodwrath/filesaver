@@ -1,4 +1,4 @@
-//1.33.2024
+//1.34.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -22,11 +22,11 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         console.log("Usuario autenticado:", user.email);
         currentUser = user; // Guardar el usuario autenticado
-    } else {
-        console.warn("No hay un usuario autenticado. Redirigiendo a la página de inicio de sesión...");
-        alert("Debes iniciar sesión para subir una póliza o ver tus archivos.");
-        window.location.href = "index.html"; // Redirigir a la página de inicio de sesión
-    }
+    } //else {
+    //console.warn("No hay un usuario autenticado. Redirigiendo a la página de inicio de sesión...");
+    //alert("Debes iniciar sesión para subir una póliza o ver tus archivos.");
+    //window.location.href = "index.html"; // Redirigir a la página de inicio de sesión
+    //}
 });
 
 // 🔹 Función para convertir un archivo a Base64
@@ -77,15 +77,15 @@ async function leerContenidoPDF(archivo) {
 
 // 🔹 Función para manejar la subida de archivos
 async function subirPoliza() {
-    if (!currentUser) {
-        alert("Debes iniciar sesión para subir una póliza.");
-        return;
-    }
+    //    if (!currentUser) {
+    //        alert("Debes iniciar sesión para subir una póliza.");
+    //        return;
+    //    }
 
     const aseguradora = document.getElementById("aseguradora").value;
     const archivoInput = document.getElementById("archivo_poliza");
-    const primatotal = document.getElementById("primaTotal").value;
-    const primaneta = document.getElementById("primaNeta").value; // Obtener el valor de primaNeta
+    const primatotal = parseFloat(document.getElementById("primaTotal").value);
+    const primaneta = parseFloat(document.getElementById("primaNeta").value); // Obtener el valor de primaNeta
     const archivo = archivoInput.files[0];
 
     // Validar que se haya seleccionado una aseguradora y un archivo
@@ -104,16 +104,14 @@ async function subirPoliza() {
             aseguradora: aseguradora,
             urlArchivo: base64Archivo, // Guardar el archivo en Base64
             NIV: "", // Provide a default value or remove this line if not needed
-            primaTotal: primatotal, // Guardar el valor de primaTotal
+            primaNeta: primatotal, // Guardar el valor de primaNeta
             primaNeta: primaneta, // Provide a default value or remove this line if not needed
             fechaSubida: new Date().toISOString(),
             usuario: currentUser.email, // Guardar el correo del usuario autenticado
         });
 
-        console.log("Metadatos guardados en Firestore con ID:", docRef.id);
         alert("Póliza subida con éxito.");
     } catch (error) {
-        console.error("Error al subir la póliza:", error);
         alert("Hubo un error al subir la póliza. Por favor, inténtalo de nuevo.");
     }
 }
@@ -163,7 +161,6 @@ async function mostrarArchivos() {
         ventanaEmergente.document.write(listaArchivosHTML);
         ventanaEmergente.document.close();
     } catch (error) {
-        console.error("Error al obtener los archivos:", error);
         alert("Hubo un error al obtener tus archivos. Por favor, inténtalo de nuevo.");
     }
 }
@@ -183,21 +180,62 @@ function extraerdatosafirme(texto) {
 }
 
 function extraerprimatotalqualitas(texto) {
-    const regex = /IMPORTE TOTAL\.\s+([\d,]+\.\d+)\s+PESOS/; // Buscar "IMPORTE TOTAL." seguido de un número y "PESOS"
+    // Primer formato: Capturar el número después de "Aplicada:" y antes de "DEL VALLE"
+    const regex = /Aplicada:\s(?:[\d,]+\.\d+\s+){5}([\d,]+\.\d+)|([\d,]+\.\d+)\s{3}DEL VALLE/i;
+
+    // Segundo formato: Capturar el número entre "IMPORTE TOTAL." y "16 %"
+    // Contando los espacios entre "IMPORTE TOTAL." y el número, y entre el número y "16 %"
+    const regex1 = /IMPORTE TOTAL\.\s{3}([\d,]+\.\d+)\s{2}PESOS/;
+
+    // Intentar con el primer formato
     const match = texto.match(regex);
-    return match && match[1] ? match[1].replace(/,/g, "") : null; // Retornar el número de póliza o null
+
+    if (match) {
+        const primaTotal = match[1] || match[2]; // Capturar el número encontrado
+        console.log("Prima total encontrada (formato 1):", primaTotal);
+        return primaTotal; // Devolver el número como texto
+    }
+
+    // Intentar con el segundo formato si el primero no funciona
+    const match1 = texto.match(regex1);
+
+    if (match1) {
+        const primaTotal = match1[1]; // Capturar el número encontrado
+        console.log("Prima total encontrada (formato 2):", primaTotal);
+        return primaTotal; // Devolver el número como texto
+    }
+
+    // Si no se encuentra en ninguno de los formatos
+    console.warn("No se encontró la Prima Total en el texto.");
+    return null;
 }
 
 function extraerprimanetaqualitas(texto) {
-    const regex = /I\.V\.A\.\s+([\d,]+\.\d+)\s+IMPORTE TOTAL\./; // Buscar el número entre "I.V.A." y "IMPORTE TOTAL."
-    const match = texto.match(regex);
-    return match && match[1] ? match[1].replace(/,/g, "") : null; // Convertir el número a float
-}
+    // Primer formato: Capturar el número 4 espacios después de "Aplicada:" y 6 espacios antes de "DEL VALLE"
+    const regex = /Aplicada:\s(?:[\d,]+\.\d+\s+){3}([\d,]+\.\d+)|([\d,]+\.\d+)\s(?:[\d,]+\.\d+\s+){5}DEL VALLE/i;
 
-function extraerPrimaNetaQualitas(texto) {
-    const regex = /Subtotal I\.V\.A\.\s+([\d,]+\.\d+)\s+IMPORTE TOTAL\./; // Buscar el número entre "Subtotal I.V.A." y "IMPORTE TOTAL."
+    // Segundo formato: Capturar el número entre "Subtotal" e "IMPORTE TOTAL."
+    // Considerando los espacios exactos en el texto proporcionado
+    const regex1 = /Subtotal\s+I\.V\.A\.\s+\d{1,3}(?:,\d{3})*\.\d{2}\s+\d{1,3}(?:,\d{3})*\.\d{2}\s+([\d,]+\.\d+)\s+\d{1,3}(?:,\d{3})*\.\d{2}\s+IMPORTE TOTAL\./i;
+
     const match = texto.match(regex);
-    return match && match[1] ? parseFloat(match[1].replace(/,/g, "")) : null; // Convertir el número a float
+
+    if (match) {
+        const primaNeta = match[1] || match[2]; // Capturar el número encontrado
+        console.log("Prima neta encontrada (formato 1):", primaNeta);
+        return primaNeta; // Devolver como cadena de texto
+    }
+
+    const match1 = texto.match(regex1);
+
+    if (match1) {
+        const primaNeta = match1[1]; // Capturar el número encontrado
+        console.log("Prima neta encontrada (formato 2):", primaNeta);
+        return primaNeta; // Devolver como cadena de texto
+    }
+
+    console.warn("No se encontró la Prima neta en el texto.");
+    return null;
 }
 
 // 🔹 Función para extraer el número de póliza de Qualitas
@@ -205,6 +243,26 @@ function extraerdatosqualitas(texto) {
     const regex = /PÓLIZA(?:\s+\S+){2}\s+(\d+)/; // Buscar "PÓLIZA" seguido de dos palabras y capturar el número
     const match = texto.match(regex); // Retornar el número de póliza o null
     return match && match[1] ? match[1] : null;
+}
+
+function extraerNumeroSerie(texto) {
+    const regexSerieMotor = /\bSerie:\s*([A-Z0-9]{17})\b.*?\bMotor\b/i; // Serie with reference to "Motor"
+    const regexColorVigencia = /\bColor:\s*.*?\b([A-Z0-9]{17})\b.*?\bVIGENCIA\b/i; // Serie with reference to "Color:" and "VIGENCIA"
+
+    const matchSerieMotor = texto.match(regexSerieMotor); // Buscar el número de serie con referencia "Serie:" y "Motor"
+    const matchColorVigencia = texto.match(regexColorVigencia); // Buscar el número de serie con referencia "Color:" y "VIGENCIA"
+
+    if (matchSerieMotor) {
+        console.log("Número de serie encontrado (Serie-Motor):", matchSerieMotor[1]);
+        return matchSerieMotor[1]; // Retornar el número de serie encontrado
+    }
+    if (matchColorVigencia) {
+        console.log("Número de serie encontrado (Color-VIGENCIA):", matchColorVigencia[1]);
+        return matchColorVigencia[1]; // Retornar el número de serie encontrado
+    }
+
+    console.warn("No se encontró el número de serie en el texto.");
+    return null; // Retornar null si no se encuentra ningún número de serie
 }
 
 // Evento para manejar la selección del archivo
@@ -229,7 +287,6 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
             }
 
             if (aseguradora) {
-                console.log("Aseguradora identificada:", aseguradora);
                 document.getElementById("aseguradora").value = aseguradora.toLowerCase(); // Actualizar el campo aseguradora
 
                 // Extraer datos específicos según la aseguradora
@@ -241,12 +298,14 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("poliza").value = numeroPoliza;
                 } else if (aseguradora === "Qualitas") {
                     const numeroPoliza = extraerdatosqualitas(contenidoPDF);
-                    console.log("numero de poliza", numeroPoliza);
-                    const primaNeta = extraerprimanetaqualitas(contenidoPDF);
-                    console.log("primatotal", primaNeta);
-
+                    const primatotal = extraerprimatotalqualitas(contenidoPDF);
+                    const primaneta = extraerprimanetaqualitas(contenidoPDF);
+                    const serie = extraerNumeroSerie(contenidoPDF);
+                    console.log("serie", serie);
                     document.getElementById("poliza").value = numeroPoliza;
-                    document.getElementById("primaNeta").value = primaNeta;
+                    document.getElementById("primaTotal").value = "$" + primatotal;
+                    document.getElementById("primaNeta").value = "$" + primaneta;
+                    document.getElementById("niv").value = serie; // Actualizar el campo serie
                 }
             } else {
                 alert("No se pudo identificar la aseguradora en el archivo.");
