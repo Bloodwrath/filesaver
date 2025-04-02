@@ -1,4 +1,4 @@
-//1.343.2024
+//1.35.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -183,28 +183,33 @@ function extraerdatosafirme(texto) {
 }
 
 function extraerprimatotalqualitas(texto) {
-    // Primer formato: Capturar el número después de "Aplicada:" y antes de "DEL VALLE"
-    const regex = /Aplicada:\s(?:[\d,]+\.\d+\s+){5}([\d,]+\.\d+)|([\d,]+\.\d+)\s{3}DEL VALLE/i;
+    // Primer formato: Capturar el número entre "Aplicada:" y "Funcionario Autorizado"
+    const regex1 = /Aplicada:\s(?:[\d,]+\.\d+\s+){5}([\d,]+\.\d+)|([\d,]+\.\d+)\s+Funcionario Autorizado/i;
 
-    // Segundo formato: Capturar el número entre "IMPORTE TOTAL." y "16 %"
-    // Contando los espacios entre "IMPORTE TOTAL." y el número, y entre el número y "16 %"
-    const regex1 = /IMPORTE TOTAL\.\s{3}([\d,]+\.\d+)\s{2}PESOS/;
+    // Segundo formato: Capturar el número entre "IMPORTE TOTAL." y "PESOS"
+    const regex2 = /IMPORTE TOTAL\.\s+([\d,]+\.\d+)\s+PESOS/i;
+
+    // Tercer formato: Capturar el número entre "Forma de: Pago:" y "Exclusivo para reporte"
+    const regex3 = /Forma de:\s*Pago:\s*[A-Z]+\s+([\d,]+\.\d{2})/i;
 
     // Intentar con el primer formato
-    const match = texto.match(regex);
-
-    if (match) {
-        const primaTotal = match[1] || match[2]; // Capturar el número encontrado
-        console.log("Prima total encontrada (formato 1):", primaTotal);
+    const match1 = texto.match(regex1);
+    if (match1) {
+        const primaTotal = match1[1] || match1[2]; // Capturar el número encontrado
         return primaTotal; // Devolver el número como texto
     }
 
-    // Intentar con el segundo formato si el primero no funciona
-    const match1 = texto.match(regex1);
+    // Intentar con el segundo formato
+    const match2 = texto.match(regex2);
+    if (match2) {
+        const primaTotal = match2[1]; // Capturar el número encontrado
+        return primaTotal; // Devolver el número como texto
+    }
 
-    if (match1) {
-        const primaTotal = match1[1]; // Capturar el número encontrado
-        console.log("Prima total encontrada (formato 2):", primaTotal);
+    // Intentar con el tercer formato
+    const match3 = texto.match(regex3);
+    if (match3) {
+        const primaTotal = match3[1]; // Capturar el número encontrado
         return primaTotal; // Devolver el número como texto
     }
 
@@ -214,30 +219,31 @@ function extraerprimatotalqualitas(texto) {
 }
 
 function extraerprimanetaqualitas(texto) {
-    // Primer formato: Capturar el número 4 espacios después de "Aplicada:" y 6 espacios antes de "DEL VALLE"
-    const regex = /Aplicada:\s(?:[\d,]+\.\d+\s+){3}([\d,]+\.\d+)|([\d,]+\.\d+)\s(?:[\d,]+\.\d+\s+){5}DEL VALLE/i;
+    // Regex 1: Capturar el número inmediatamente después de "Aplicada:"
+    const regex1 = /Aplicada:\s+([\d,]+\.\d+)/i;
 
-    // Segundo formato: Capturar el número entre "Subtotal" e "IMPORTE TOTAL."
-    // Considerando los espacios exactos en el texto proporcionado
-    const regex1 = /Subtotal\s+I\.V\.A\.\s+\d{1,3}(?:,\d{3})*\.\d{2}\s+\d{1,3}(?:,\d{3})*\.\d{2}\s+([\d,]+\.\d+)\s+\d{1,3}(?:,\d{3})*\.\d{2}\s+IMPORTE TOTAL\./i;
-
-    const match = texto.match(regex);
-
-    if (match) {
-        const primaNeta = match[1] || match[2]; // Capturar el número encontrado
-        console.log("Prima neta encontrada (formato 1):", primaNeta);
-        return primaNeta; // Devolver como cadena de texto
-    }
+    // Regex 2: Capturar el número inmediatamente después de "I.V.A."
+    const regex2 = /I\.V\.A\.\s+([\d,]+\.\d+)/i; // Note: This might capture the IVA amount, not Prima Neta, based on policy structure.
 
     const match1 = texto.match(regex1);
 
+    const match2 = texto.match(regex2);
+
+
+    if (match2) {
+        // WARNING: Based on observed formats, this regex might capture the IVA value, not Prima Neta.
+        // Proceeding as per user's specific instruction.
+        const primaNeta = match2[1]; // Capturar el número encontrado
+        console.log("Prima neta encontrada (formato IVA):", primaNeta);
+        return primaNeta; // Devolver como cadena de texto
+    }
     if (match1) {
         const primaNeta = match1[1]; // Capturar el número encontrado
-        console.log("Prima neta encontrada (formato 2):", primaNeta);
+        console.log("Prima neta encontrada (formato Aplicada):", primaNeta);
         return primaNeta; // Devolver como cadena de texto
     }
 
-    console.warn("No se encontró la Prima neta en el texto.");
+    console.warn("No se encontró la Prima neta en el texto con los patrones especificados.");
     return null;
 }
 
