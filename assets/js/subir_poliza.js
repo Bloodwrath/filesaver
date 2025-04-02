@@ -84,8 +84,8 @@ async function subirPoliza() {
 
     const aseguradora = document.getElementById("aseguradora").value;
     const archivoInput = document.getElementById("archivo_poliza");
-    const primatotal = parseFloat(document.getElementById("primaTotal").value);
-    const primaneta = parseFloat(document.getElementById("primaNeta").value); // Obtener el valor de primaNeta
+    const primatotal = document.getElementById("primaTotal").value;
+    const primaneta = document.getElementById("primaNeta").value; // Obtener el valor de primaNeta
     const serie = document.getElementById("niv").value; // Obtener el valor de NIV
     const nombreasegurado = document.getElementById("nombreasegurado").value; // Obtener el nombre asegurado
     const archivo = archivoInput.files[0];
