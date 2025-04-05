@@ -1,6 +1,4 @@
 //1.363.2024
-
-
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -58,24 +56,30 @@ async function subirPoliza() {
     }
 
     try {
-        // 🔹 Convertir el archivo a Base64
-        const base64Archivo = await convertirArchivoABase64(archivo);
-        console.log("Archivo en Base64:", base64Archivo);
+        const polizasRef = collection(db, "polizas");
+        const consulta = query(polizasRef, where("poliza", "==", Poliza));
 
-        // 🔹 Guardar metadatos y archivo en Firestore
-        const docRef = await addDoc(collection(db, "polizas"), {
-            aseguradora: aseguradora,
-            urlArchivo: base64Archivo, // Guardar el archivo en Base64
-            NIV: serie, // Provide a default value or remove this line if not needed
-            primaTotal: primatotal, // Guardar el valor de primaNeta
-            primaNeta: primaneta, // Provide a default value or remove this line if not needed
-            fechaSubida: new Date().toISOString(),
-            usuario: currentUser.email,// Guardar el correo del usuario autenticado
-            nombreAsegurado: nombreasegurado, // Guardar el nombre asegurado
-            poliza: Poliza // Guardar el valor de póliza
-        });
 
-        alert("Póliza subida con éxito.");
+        if (!consulta) { // Verificar si la póliza ya existe
+            // 🔹 Convertir el archivo a Base64
+            const base64Archivo = await convertirArchivoABase64(archivo);
+            console.log("Archivo en Base64:", base64Archivo);
+
+            // 🔹 Guardar metadatos y archivo en Firestore
+            const docRef = await addDoc(collection(db, "polizas"), {
+                aseguradora: aseguradora,
+                urlArchivo: base64Archivo, // Guardar el archivo en Base64
+                NIV: serie, // Provide a default value or remove this line if not needed
+                primaTotal: primatotal, // Guardar el valor de primaNeta
+                primaNeta: primaneta, // Provide a default value or remove this line if not needed
+                fechaSubida: new Date().toISOString(),
+                usuario: currentUser.email,// Guardar el correo del usuario autenticado
+                nombreAsegurado: nombreasegurado, // Guardar el nombre asegurado
+                poliza: Poliza // Guardar el valor de póliza
+            });
+            alert("Póliza subida con éxito.");
+        }
+
     } catch (error) {
         alert("Hubo un error al subir la póliza. Por favor, inténtalo de nuevo.");
     }
@@ -91,7 +95,7 @@ async function mostrarArchivos() {
     try {
         // 🔹 Consultar Firestore para obtener los documentos del usuario autenticado
         const polizasRef = collection(db, "polizas");
-        const consulta = query(polizasRef, where("usuario", "==", currentUser.email));
+        const consulta = query(polizasRef, where("usuario", "==", currentUser.email)); // Filtrar por el correo del usuario autenticado
         const querySnapshot = await getDocs(consulta);
 
         if (querySnapshot.empty) {
@@ -114,7 +118,7 @@ async function mostrarArchivos() {
                 <strong>Póliza:</strong> ${poliza}<br>
                     <strong>Aseguradora:</strong> ${aseguradora}<br>
                     <strong>Fecha:</strong> ${fecha}<br>
-                    <a href="data:application/pdf;base64,${base64Archivo}" download="poliza_${aseguradora}.pdf">
+                    <a href="data:application/pdf;base64,${base64Archivo}" download="poliza_${poliza}.pdf">
                         Descargar PDF
                     </a>
                 </li>
