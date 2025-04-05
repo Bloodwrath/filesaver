@@ -49,6 +49,7 @@ async function subirPoliza() {
     const serie = document.getElementById("niv").value; // Obtener el valor de NIV
     const nombreasegurado = document.getElementById("nombreasegurado").value; // Obtener el nombre asegurado
     const archivo = archivoInput.files[0];
+    const Poliza = document.getElementById("poliza").value; // Obtener el valor de póliza
 
     // Validar que se haya seleccionado una aseguradora y un archivo
     if (!aseguradora || !archivo) {
@@ -70,7 +71,8 @@ async function subirPoliza() {
             primaNeta: primaneta, // Provide a default value or remove this line if not needed
             fechaSubida: new Date().toISOString(),
             usuario: currentUser.email,// Guardar el correo del usuario autenticado
-            nombreAsegurado: nombreasegurado // Guardar el nombre asegurado
+            nombreAsegurado: nombreasegurado, // Guardar el nombre asegurado
+            poliza: Poliza // Guardar el valor de póliza
         });
 
         alert("Póliza subida con éxito.");
@@ -103,11 +105,13 @@ async function mostrarArchivos() {
             const datos = doc.data();
             const base64Archivo = datos.urlArchivo; // Recuperar el archivo en Base64
             const aseguradora = datos.aseguradora;
+            const poliza = datos.poliza
             const fecha = datos.fechaSubida;
 
             // Crear un enlace de descarga para cada archivo
             listaArchivosHTML += `
                 <li>
+                <strong>Póliza:</strong> ${poliza}<br>
                     <strong>Aseguradora:</strong> ${aseguradora}<br>
                     <strong>Fecha:</strong> ${fecha}<br>
                     <a href="data:application/pdf;base64,${base64Archivo}" download="poliza_${aseguradora}.pdf">
