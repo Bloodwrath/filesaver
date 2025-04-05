@@ -54,16 +54,19 @@ async function subirPoliza() {
         alert("Por favor, selecciona una aseguradora y un archivo.");
         return;
     }
+    const polizasRef = collection(db, "polizas");
+    const consulta = query(polizasRef, where("poliza", "==", Poliza));
+    if (consulta) { // Verificar si la póliza ya existe
+        try {
 
-    try {
-        const polizasRef = collection(db, "polizas");
-        const consulta = query(polizasRef, where("poliza", "==", Poliza));
 
 
-        if (!consulta) { // Verificar si la póliza ya existe
+
+            alert("La póliza ya existe. Por favor, verifica el número de póliza.");
             // 🔹 Convertir el archivo a Base64
             const base64Archivo = await convertirArchivoABase64(archivo);
             console.log("Archivo en Base64:", base64Archivo);
+
 
             // 🔹 Guardar metadatos y archivo en Firestore
             const docRef = await addDoc(collection(db, "polizas"), {
@@ -79,9 +82,10 @@ async function subirPoliza() {
             });
             alert("Póliza subida con éxito.");
         }
-
-    } catch (error) {
-        alert("Hubo un error al subir la póliza. Por favor, inténtalo de nuevo.");
+        catch (error) {
+            console.error("Error al subir la póliza:", error);
+            alert("La póliza ya existe. Por favor, verifica el número de póliza.");
+        }
     }
 }
 
