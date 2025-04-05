@@ -23,23 +23,37 @@
         <h1>Subir Póliza de Seguro</h1>
         <p>Selecciona la aseguradora, sube el archivo PDF de la póliza y revisa los datos extraídos.</p>
 
-        <form id="form_subir_poliza" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="archivo_poliza" class="form-label">Archivo de Póliza (PDF):</label>
-                <input type="file" id="archivo_poliza" name="archivo_poliza" class="form-control"
-                    accept="application/pdf" required>
-            </div>
-            <div>
-                <table class="table table-striped table-bordered">
-                    <tr>
+
+
+        <form id="form_subir_poliza" enctype="multipart/form-data" with="100%">
+            <div class="table-responsive">
+                <table class="table table-hover table-secondary">
+                    <thead>
+                        <tr class="table-dark">
+
+                            <th colspan="2" class="text-center">
+                                <label for="archivo_poliza" class="form-label">Archivo de Póliza (PDF):</label>
+                            </th>
+                            <th colspan="2" class="text-center">
+                                <input type="file" id="archivo_poliza" name="archivo_poliza" class="form-control"
+                                    accept="application/pdf" required>
+                            </th>
+
+                        </tr>
+                    </thead>
+
+                    <tr class="fila" style="visibility : collapse">
                         <td><label for="aseguradora" class="form-label">Aseguradora:</label></td>
-                        <td><input type="text" id="aseguradora" name="aseguradora" class="form-label"
-                                placeholder="Aseguradora" required></td>
+                        <td>
+                            <input type="text" id="aseguradora" name="aseguradora" class="form-label"
+                                placeholder="Aseguradora" required>
+                        </td>
                         <td><label for="primaTotal" class="form-label">Prima Total:</label></td>
                         <td><input type="text" id="primaTotal" name="primaTotal" class="form-label"
                                 placeholder="Prima Total" required></td>
                     </tr>
-                    <tr>
+
+                    <tr class="fila" style="visibility : collapse">
                         <td><label for="poliza" class="form-label">Número de Póliza:</label></td>
                         <td><input type="text" id="poliza" name="poliza" class="form-label"
                                 placeholder="Número de Póliza" required></td>
@@ -47,7 +61,7 @@
                         <td><input type="text" id="niv" name="niv" class="form-label" placeholder="Numero de serie"
                                 required></td>
                     </tr>
-                    <tr>
+                    <tr class="fila" style="visibility : collapse">
                         <td><label for="primaNeta" class="form-label">Prima Neta:</label></td>
                         <td><input type="text" id="primaNeta" name="primaNeta" class="form-label"
                                 placeholder="Prima Neta" required></td>
@@ -57,7 +71,7 @@
                     </tr>
                 </table>
             </div>
-            <button type="button" id="btn_subir" class="btn btn-primary">Subir Póliza</button>
+            <button type="button" id="btn_subir" class="btn btn-primary" disabled>Subir Póliza</button>
         </form>
 
         <!-- Nuevo botón para mostrar archivos -->
@@ -67,7 +81,7 @@
     <!-- FOOTER -->
     <footer class="page-footer dark">
         <div class="footer-copyright">
-            <p>© copyright FILESAVER S.A. DE C.V. 1.35</p>
+            <p>© copyright FILESAVER S.A. DE C.V. 1.36</p>
         </div>
     </footer>
 
@@ -78,7 +92,8 @@
     <script type="module" src="assets/js/main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
     <script type="module" src="assets/js/firebaseKey.js"></script>
-    <script type="module" src="subirpolizacopy.js" defer></script>
+    <script type="module" src="assets/js/extraccion.js"></script>
+    <script type="module" src="assets/js/subirpolizacopy.js" defer></script>
 </body>
 
 </html>
