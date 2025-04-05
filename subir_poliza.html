@@ -26,35 +26,34 @@
 
 
         <form id="form_subir_poliza" enctype="multipart/form-data" with="100%">
-
             <div class="table-responsive">
-                <table class="table table-dark">
+                <table class="table table-hover table-secondary">
                     <thead>
                         <tr class="table-dark">
 
-
-                            <label for="archivo_poliza" class="form-label">Archivo de Póliza (PDF):</label>
-                            <input type="file" id="archivo_poliza" name="archivo_poliza" class="form-control"
-                                accept="application/pdf" required>
-
+                            <th colspan="2" class="text-center">
+                                <label for="archivo_poliza" class="form-label">Archivo de Póliza (PDF):</label>
+                            </th>
+                            <th colspan="2" class="text-center">
+                                <input type="file" id="archivo_poliza" name="archivo_poliza" class="form-control"
+                                    accept="application/pdf" required>
+                            </th>
 
                         </tr>
                     </thead>
-                    <tr>
-                        <td>
-                            <label for="aseguradora" class="form-label">Aseguradora:</label>
-                        </td>
+
+                    <tr class="fila" style="visibility : collapse">
+                        <td><label for="aseguradora" class="form-label">Aseguradora:</label></td>
                         <td>
                             <input type="text" id="aseguradora" name="aseguradora" class="form-label"
                                 placeholder="Aseguradora" required>
                         </td>
-                        <td>
-                            <label for="primaTotal" class="form-label">Prima Total:</label>
-                        </td>
+                        <td><label for="primaTotal" class="form-label">Prima Total:</label></td>
                         <td><input type="text" id="primaTotal" name="primaTotal" class="form-label"
                                 placeholder="Prima Total" required></td>
                     </tr>
-                    <tr>
+
+                    <tr class="fila" style="visibility : collapse">
                         <td><label for="poliza" class="form-label">Número de Póliza:</label></td>
                         <td><input type="text" id="poliza" name="poliza" class="form-label"
                                 placeholder="Número de Póliza" required></td>
@@ -62,7 +61,7 @@
                         <td><input type="text" id="niv" name="niv" class="form-label" placeholder="Numero de serie"
                                 required></td>
                     </tr>
-                    <tr>
+                    <tr class="fila" style="visibility : collapse">
                         <td><label for="primaNeta" class="form-label">Prima Neta:</label></td>
                         <td><input type="text" id="primaNeta" name="primaNeta" class="form-label"
                                 placeholder="Prima Neta" required></td>
