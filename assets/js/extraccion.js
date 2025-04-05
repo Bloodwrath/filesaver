@@ -1,7 +1,11 @@
-//1.361.2024
+//1.362.2024
+
 
 // Importar PDF.js
 import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs";
+
+// Configurar el worker de PDF.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs";
 
 // Evento para manejar la selección del archivo
 document.getElementById("archivo_poliza").addEventListener("change", async (event) => {
