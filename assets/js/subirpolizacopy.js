@@ -1,4 +1,4 @@
-//1.36.2024
+//1.361.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";

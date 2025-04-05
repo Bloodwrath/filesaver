@@ -1,11 +1,9 @@
-//1.36.2024
+//1.361.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 import { app } from "./firebaseKey.js";
-// Configurar el worker de PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.worker.min.mjs";
 
 // 🔹 Inicializar Firebase
 const auth = getAuth(app);

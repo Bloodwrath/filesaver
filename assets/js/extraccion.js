@@ -1,4 +1,4 @@
-//1.36.2024
+//1.361.2024
 
 // Importar PDF.js
 import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs";
