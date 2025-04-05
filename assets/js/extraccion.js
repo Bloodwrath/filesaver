@@ -1,4 +1,5 @@
-//1.362.2024
+//1.363.2024
+
 
 
 // Importar PDF.js
@@ -53,6 +54,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
                     }
+                    document.getElementById("btn_subir").removeAttribute("disabled");
                 } else if (aseguradora === "Qualitas") {
                     document.getElementById("poliza").value = extraerpolizaqualitas(contenidoPDF);
                     document.getElementById("primaTotal").value = extraerprimatotalqualitas(contenidoPDF);
@@ -63,6 +65,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
                     }
+                    document.getElementById("btn_subir").removeAttribute("disabled");
                 }
             } else {
                 alert("No se pudo identificar la aseguradora en el archivo.");
