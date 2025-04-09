@@ -1,4 +1,5 @@
-//1.363.2024
+//1.364.2024
+
 //2.0.0
 // Importar PDF.js
 import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs";
@@ -28,7 +29,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
             }
 
             if (aseguradora) {
-                document.getElementById("aseguradora").value = aseguradora.toLowerCase(); // Actualizar el campo aseguradora
+                document.getElementById("aseguradora").value = aseguradora.toUpperCase(); // Actualizar el campo aseguradora
 
                 // Extraer datos específicos según la aseguradora
                 if (aseguradora === "Banorte") {
@@ -38,7 +39,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("primaNeta").value = extraerprimanetabanorte(contenidoPDF); // Actualizar el campo primaNeta
                     document.getElementById("primaTotal").value = extraerprimatotalbanorte(contenidoPDF); // Actualizar el campo primaTotal
                     document.getElementById("niv").value = extraernumeroseriebanorte(contenidoPDF); // Actualizar el campo serie
-                    document.getElementById("nombreasegurado").value = extraernombrebanorte(contenidoPDF);
+                    document.getElementById("nombreasegurado").value = extraernombrebanorte(contenidoPDF).toUpperCase(); // Actualizar el campo nombre
                     var x = document.getElementsByClassName("fila");
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
@@ -46,8 +47,11 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("btn_subir").removeAttribute("disabled");
 
                 } else if (aseguradora === "Afirme") {
-                    const numeroPoliza = extraerpolizaafirme(contenidoPDF);
-                    document.getElementById("poliza").value = numeroPoliza;
+                    document.getElementById("poliza").value = extraerpolizaafirme(contenidoPDF); // Actualizar el campo póliza
+                    document.getElementById("primaTotal").value = extraerprimatotalafirme(contenidoPDF); // Actualizar el campo primaTotal
+                    document.getElementById("primaNeta").value = extraerprimanetaafirme(contenidoPDF); // Actualizar el campo primaNeta
+                    document.getElementById("niv").value = extraernumeroserieafirme(contenidoPDF); // Actualizar el campo serie
+                    //document.getElementById("nombreasegurado").value = extraernombreafirme(contenidoPDF).toUpperCase(); // Actualizar el campo nombre
                     var x = document.getElementsByClassName("fila");
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
@@ -58,7 +62,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("primaTotal").value = extraerprimatotalqualitas(contenidoPDF);
                     document.getElementById("primaNeta").value = extraerprimanetaqualitas(contenidoPDF);
                     document.getElementById("niv").value = extraernumeroseriequalitas(contenidoPDF); // Actualizar el campo serie
-                    document.getElementById("nombreasegurado").value = extraernombrequalitas(contenidoPDF); // Actualizar el campo nombre
+                    document.getElementById("nombreasegurado").value = extraernombrequalitas(contenidoPDF).toUpperCase(); // Actualizar el campo nombre
                     var x = document.getElementsByClassName("fila");
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
@@ -105,7 +109,7 @@ async function leerContenidoPDF(archivo) {
                     });
 
                     // Verificar si la palabra "AVISO DE COBRO" está en la página
-                    if (textoPagina.toLowerCase().includes("aviso de cobro")) {
+                    if (textoPagina.toLowerCase().includes("aviso de cobro") || !textoPagina.toLowerCase().includes("prima") && !textoPagina.toLowerCase().includes("información del asegurado")) {
                         console.log(`Se encontró la palabra "AVISO DE COBRO" en la página ${paginaActual}. Poniendo página actual en ${paginaActual + 1}`);
                         paginaActual++;
                         continue;
@@ -147,13 +151,6 @@ function extraerpolizabanorte(texto) {
     if (match1) {
         return match1 && match1[1] ? match1[1] : null;
     }
-}
-
-// 🔹 Función para extraer el número de póliza de Afirme
-function extraerpolizaafirme(texto) {
-    const regex = /(\d{4}-\d{8}-\d{2})\s+Fecha de Emisión:/; // Buscar el número de póliza seguido de "Fecha de Emisión:"
-    const match = texto.match(regex);
-    return match && match[1] ? match[1] : null; // Retornar el número de póliza o null
 }
 
 // 🔹 Función para extraer la prima neta de Banorte
@@ -285,19 +282,19 @@ function extraerprimanetaqualitas(texto) {
 
 // Función para extraer el número de serie de Qualitas
 function extraernumeroseriequalitas(texto) {
-    const regexSerieMotor = /\bSerie:\s*([A-Z0-9]{17})\b.*?\bMotor\b/i; // Serie with reference to "Motor"
-    const regexColorVigencia = /\bColor:\s*.*?\b([A-Z0-9]{17})\b.*?\bVIGENCIA\b/i; // Serie with reference to "Color:" and "VIGENCIA"
+    const regex1 = /\bSerie:\s*([A-Z0-9]{17})\b.*?\bMotor\b/i; // Serie with reference to "Motor"
+    const regex2 = /\bColor:\s*.*?\b([A-Z0-9]{17})\b.*?\bVIGENCIA\b/i; // Serie with reference to "Color:" and "VIGENCIA"
 
-    const matchSerieMotor = texto.match(regexSerieMotor); // Buscar el número de serie con referencia "Serie:" y "Motor"
-    const matchColorVigencia = texto.match(regexColorVigencia); // Buscar el número de serie con referencia "Color:" y "VIGENCIA"
+    const match1 = texto.match(regex1); // Buscar el número de serie con referencia "Serie:" y "Motor"
+    const match2 = texto.match(regex2); // Buscar el número de serie con referencia "Color:" y "VIGENCIA"
 
-    if (matchSerieMotor) {
-        console.log("Número de serie encontrado (Serie-Motor):", matchSerieMotor[1]);
-        return matchSerieMotor[1]; // Retornar el número de serie encontrado
+    if (match1) {
+        console.log("Número de serie encontrado (Serie-Motor):", match1[1]);
+        return match1[1]; // Retornar el número de serie encontrado
     }
-    if (matchColorVigencia) {
-        console.log("Número de serie encontrado (Color-VIGENCIA):", matchColorVigencia[1]);
-        return matchColorVigencia[1]; // Retornar el número de serie encontrado
+    if (match2) {
+        console.log("Número de serie encontrado (Color-VIGENCIA):", match2[1]);
+        return match2[1]; // Retornar el número de serie encontrado
     }
 
     console.warn("No se encontró el número de serie en el texto.");
@@ -325,4 +322,91 @@ function extraernombrequalitas(texto) {
     return null; // Retornar null si no se encuentra ningún nombre
 }
 
+// Función para extraer la prima total de Afirme
+function extraerprimatotalafirme(texto) {
 
+    const regex2 = /CNSF.*?(\d{1,3}(?:,\d{3})*\.\d{2}).*?ANUAL/s;;
+    const match2 = texto.match(regex2);
+    if (match2) {
+        console.log("Prima total Afirme encontrada:", match2[1]);
+        return match2[1]; // Retornar el número de serie encontrado
+    } const regex1 = /Prima\s+Total:\s*\$?\s*([\d,]+\.\d{2})/i;
+    const match1 = texto.match(regex1);
+    if (match1) {
+        console.log("Prima total Afirme encontrada:", match1[1]);
+        return match1[1]; // Retornar el número de serie encontrado
+    }
+}
+
+// Función para extraer la prima neta de Afirme
+function extraerprimanetaafirme(texto) {
+    const regex2 = /(\d{1,3}(?:,\d{3})*\.\d{2})(?=\s*Línea:\s*Unidades A Riesgo:\s*Prima:)/;
+    const match2 = texto.match(regex2);
+    if (match2) {
+        console.log("Prima neta Afirme encontrada:", match2[1]);
+        return match2[1]; // Retornar el número de serie encontrado
+    }
+    const regex1 = /RESPONSABILIDAD CIVIL.*?\$?\s*(\d{1,3}(?:,\d{3})*\.\d{2}).*?Moneda:/s;
+    const match1 = texto.match(regex1);
+    if (match1) {
+        console.log("Prima neta Afirme encontrada:", match1[1]);
+        return match1[1]; // Retornar el número de serie encontrado
+    }
+
+}
+
+// Función para extraer el número de serie de Afirme
+function extraernumeroserieafirme(texto) {
+    const regex1 = /Marca:\s*Version:.*?\b([A-HJ-NPR-Z0-9]{17})\b.*?Modelo:/i;
+
+    const match1 = texto.match(regex1);
+
+    if (match1) {
+        console.log("Número de serie encontrado (Serie-Motor):", match1[1]);
+        return match1[1]; // Retornar el número de serie encontrado
+    }
+    const regex2 = /DATOS DEL VEHÍCULO.*?\b([A-HJ-NPR-Z0-9]{17})\b.*?COBERTURAS/is;
+    const match2 = texto.match(regex2);
+    if (match2) {
+        console.log("Número de serie encontrado (Color-VIGENCIA):", match2[1]);
+        return match2[1]; // Retornar el número de serie encontrado
+    } else {
+        console.warn("No se encontró el número de serie en el texto.");
+        return null; // Retornar null si no se encuentra ningún número de serie
+    }
+
+}
+
+// Función para extraer el nombre del asegurado de Afirme
+function extraernombreafirme(texto) {
+
+}
+
+// 🔹 Función para extraer el número de póliza de Afirme
+function extraerpolizaafirme(texto) {
+    const regex1 = /Emisión Inciso:\s*0*\s*(\d+)\b.*?CARATULA DE/s;
+    const match1 = texto.match(regex1);
+
+
+    if (match1) {
+        console.log("Número de poliza (Serie-Motor):", match1[1]);
+        return match1[1]; // Retornar el número de serie encontrado
+    }
+    const regex2 = /Desde:\s*Hasta:.*?(\d{4}-\d{8}-\d{2}).*?Fecha de Emisión:/i;
+    const match2 = texto.match(regex2);
+    if (match2) {
+        console.log("Número de poliza (Color-VIGENCIA):", match2[1]);
+        return match2[1]; // Retornar el número de serie encontrado
+    }
+    const regex3 = /(\d{4}-\d{8}-\d{2})\s+.*?Hasta:\s*Inciso:/i;
+    const match3 = texto.match(regex3);
+    if (match3) {
+        console.log("Número de poliza (Serie-Motor):", match3[1]);
+        return match3[1]; // Retornar el número de serie encontrado
+    }
+    else {
+        console.warn("No se encontró el número de serie en el texto.");
+        return; // Retornar null si no se encuentra ningún número de serie
+    }
+    // Retornar el número de póliza encontrado o null
+}

@@ -1,4 +1,4 @@
-//1.363.2024
+//1.364.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -40,12 +40,12 @@ async function subirPoliza() {
         return;
     }
 
-    const aseguradora = document.getElementById("aseguradora").value;
+    const aseguradora = document.getElementById("aseguradora").value.toUpperCase(); // Obtener el valor de aseguradora y convertir a mayúsculas
     const archivoInput = document.getElementById("archivo_poliza");
     const primatotal = parseFloat(document.getElementById("primaTotal").value.replace(/,/g, '')); // Eliminar comas
     const primaneta = parseFloat(document.getElementById("primaNeta").value.replace(/,/g, '')); // Eliminar comas
     const serie = document.getElementById("niv").value; // Obtener el valor de NIV
-    const nombreasegurado = document.getElementById("nombreasegurado").value; // Obtener el nombre asegurado
+    const nombreasegurado = document.getElementById("nombreasegurado").value.toUpperCase(); // Obtener el nombre asegurado
     const archivo = archivoInput.files[0];
     const Poliza = document.getElementById("poliza").value; // Obtener el valor de póliza
 
@@ -54,94 +54,47 @@ async function subirPoliza() {
         alert("Por favor, selecciona una aseguradora y un archivo.");
         return;
     }
-    const polizasRef = collection(db, "polizas");
-    const consulta = query(polizasRef, where("poliza", "==", Poliza));
-    if (consulta) { // Verificar si la póliza ya existe
-        try {
-
-
-
-
-            alert("La póliza ya existe. Por favor, verifica el número de póliza.");
-            // 🔹 Convertir el archivo a Base64
-            const base64Archivo = await convertirArchivoABase64(archivo);
-            console.log("Archivo en Base64:", base64Archivo);
-
-
-            // 🔹 Guardar metadatos y archivo en Firestore
-            const docRef = await addDoc(collection(db, "polizas"), {
-                aseguradora: aseguradora,
-                urlArchivo: base64Archivo, // Guardar el archivo en Base64
-                NIV: serie, // Provide a default value or remove this line if not needed
-                primaTotal: primatotal, // Guardar el valor de primaNeta
-                primaNeta: primaneta, // Provide a default value or remove this line if not needed
-                fechaSubida: new Date().toISOString(),
-                usuario: currentUser.email,// Guardar el correo del usuario autenticado
-                nombreAsegurado: nombreasegurado, // Guardar el nombre asegurado
-                poliza: Poliza // Guardar el valor de póliza
-            });
-            alert("Póliza subida con éxito.");
-        }
-        catch (error) {
-            console.error("Error al subir la póliza:", error);
-            alert("La póliza ya existe. Por favor, verifica el número de póliza.");
-        }
-    }
-}
-
-// 🔹 Función para mostrar los archivos del usuario autenticado y permitir la descarga
-async function mostrarArchivos() {
-    if (!currentUser) {
-        alert("Debes iniciar sesión para ver tus archivos.");
-        return;
-    }
-
     try {
-        // 🔹 Consultar Firestore para obtener los documentos del usuario autenticado
+        // 🔹 Verificar si ya existe una póliza con el mismo NIV (serie)
         const polizasRef = collection(db, "polizas");
-        const consulta = query(polizasRef, where("usuario", "==", currentUser.email)); // Filtrar por el correo del usuario autenticado
-        const querySnapshot = await getDocs(consulta);
+        const consultaExistencia = query(polizasRef, where("poliza", "==", Poliza));
+        const snapshotExistencia = await getDocs(consultaExistencia);
 
-        if (querySnapshot.empty) {
-            alert("No se encontraron archivos para este usuario.");
-            return;
+        if (!snapshotExistencia.empty) {
+            // Ya existe una póliza con este NIV
+            alert("Ya existe una póliza registrada con este número poliza");
+            return; // Detener la ejecución si ya existe
         }
 
-        // 🔹 Crear una lista de archivos con enlaces de descarga
-        let listaArchivosHTML = "<h3>Tus archivos:</h3><ul>";
-        querySnapshot.forEach((doc) => {
-            const datos = doc.data();
-            const base64Archivo = datos.urlArchivo; // Recuperar el archivo en Base64
-            const aseguradora = datos.aseguradora;
-            const poliza = datos.poliza
-            const fecha = datos.fechaSubida;
+        // Si no existe, proceder a convertir y subir
+        // 🔹 Convertir el archivo a Base64
+        const base64Archivo = await convertirArchivoABase64(archivo);
+        console.log("Archivo en Base64:", base64Archivo);
 
-            // Crear un enlace de descarga para cada archivo
-            listaArchivosHTML += `
-                <li>
-                <strong>Póliza:</strong> ${poliza}<br>
-                    <strong>Aseguradora:</strong> ${aseguradora}<br>
-                    <strong>Fecha:</strong> ${fecha}<br>
-                    <a href="data:application/pdf;base64,${base64Archivo}" download="poliza_${poliza}.pdf">
-                        Descargar PDF
-                    </a>
-                </li>
-                <br>
-            `;
+
+        // 🔹 Guardar metadatos y archivo en Firestore
+        const docRef = await addDoc(collection(db, "polizas"), {
+            aseguradora: aseguradora,
+            urlArchivo: base64Archivo, // Guardar el archivo en Base64
+            NIV: serie, // Provide a default value or remove this line if not needed
+            primaTotal: primatotal, // Guardar el valor de primaNeta
+            primaNeta: primaneta, // Provide a default value or remove this line if not needed
+            fechaSubida: new Date().toISOString(),
+            usuario: currentUser.email,// Guardar el correo del usuario autenticado
+            nombreAsegurado: nombreasegurado, // Guardar el nombre asegurado
+            poliza: Poliza // Guardar el valor de póliza
         });
-        listaArchivosHTML += "</ul>";
-
-        // Mostrar los enlaces en una ventana emergente o modal
-        const ventanaEmergente = window.open("", "_blank", "width=600,height=400");
-        ventanaEmergente.document.write(listaArchivosHTML);
-        ventanaEmergente.document.close();
-    } catch (error) {
-        alert("Hubo un error al obtener tus archivos. Por favor, inténtalo de nuevo.");
+        alert("Póliza subida con éxito.");
     }
+    catch (error) {
+        console.error("Error al subir la póliza:", error);
+        alert("Ocurrió un error al intentar subir la póliza. Por favor, inténtalo de nuevo.");
+    }
+
 }
+
+
 
 // 🔹 Agregar evento al botón de subida
 document.getElementById("btn_subir").addEventListener("click", subirPoliza);
 
-// 🔹 Agregar evento al botón de mostrar archivos
-document.getElementById("btn_mostrar_archivos").addEventListener("click", mostrarArchivos);

@@ -46,3 +46,20 @@ footer {
   text-align: center;
   padding: 10px 0;
 }
+
+#buscador {
+  width: 90%;
+}
+
+#filtrador {
+  width: auto;
+}
+
+#opcionBusqueda {
+  width: auto;
+}
+
+#tablaPolizas {
+  width: 90%;
+  margin: auto;
+}
