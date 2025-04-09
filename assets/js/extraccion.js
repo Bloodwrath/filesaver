@@ -1,4 +1,4 @@
-//1.364.2024
+//1.37.2024
 //2.0.0
 // Importar PDF.js
 import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs";
@@ -424,3 +424,103 @@ function extraerpolizaafirme(texto) {
     }
     // Retornar el número de póliza encontrado o null
 }
+
+
+let currentPDF = null;
+let currentScale = 1.0;
+const scaleStep = 0.25;
+
+document.getElementById('archivo_poliza').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+        // Mostrar controles y visor
+        document.getElementById('pdf-controls').style.display = 'flex';
+        document.getElementById('pdf-preview').style.display = 'flex';
+
+        const previewContainer = document.getElementById('pdf-preview');
+        previewContainer.innerHTML = '<p style="padding:20px;text-align:center;">Cargando PDF...</p>';
+
+        currentScale = 1.0;
+        document.getElementById('zoom-level').textContent = '100%';
+
+        const fileReader = new FileReader();
+
+        fileReader.onload = function () {
+            const typedArray = new Uint8Array(this.result);
+
+            pdfjsLib.getDocument(typedArray).promise.then(function (pdf) {
+                currentPDF = pdf;
+                renderPDF(pdf, currentScale);
+            }).catch(function (error) {
+                previewContainer.innerHTML = '<p style="padding:20px;color:red;text-align:center;">Error al cargar el PDF: ' + error.message + '</p>';
+                // Ocultar controles si hay error
+                document.getElementById('pdf-controls').style.display = 'none';
+            });
+        };
+
+        fileReader.readAsArrayBuffer(file);
+    } else {
+        const previewContainer = document.getElementById('pdf-preview');
+        previewContainer.style.display = 'block';
+        previewContainer.innerHTML = '<p style="padding:20px;color:red;text-align:center;">Por favor, selecciona un archivo PDF válido.</p>';
+        // Ocultar controles si no es PDF válido
+        document.getElementById('pdf-controls').style.display = 'none';
+    }
+});
+
+function renderPDF(pdf, scale) {
+    const previewContainer = document.getElementById('pdf-preview');
+    previewContainer.innerHTML = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+        pdf.getPage(i).then(function (page) {
+            const viewport = page.getViewport({ scale: scale });
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'pdf-page';
+            pageDiv.appendChild(canvas);
+            previewContainer.appendChild(pageDiv);
+
+            page.render(renderContext);
+        });
+    }
+}
+
+// Controles de Zoom
+document.getElementById('zoom-in').addEventListener('click', function () {
+    if (currentPDF) {
+        currentScale += scaleStep;
+        document.getElementById('zoom-level').textContent = Math.round(currentScale * 100) + '%';
+        renderPDF(currentPDF, currentScale);
+    }
+});
+
+document.getElementById('zoom-out').addEventListener('click', function () {
+    if (currentPDF && currentScale > scaleStep) {
+        currentScale -= scaleStep;
+        document.getElementById('zoom-level').textContent = Math.round(currentScale * 100) + '%';
+        renderPDF(currentPDF, currentScale);
+    }
+});
+
+document.getElementById('fit-width').addEventListener('click', function () {
+    if (currentPDF) {
+        currentPDF.getPage(1).then(function (page) {
+            const previewContainer = document.getElementById('pdf-preview');
+            const containerWidth = previewContainer.clientWidth - 40;
+            currentScale = containerWidth / page.getViewport({ scale: 1.0 }).width;
+            document.getElementById('zoom-level').textContent = Math.round(currentScale * 100) + '%';
+            renderPDF(currentPDF, currentScale);
+        });
+    }
+});
