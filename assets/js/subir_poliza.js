@@ -93,7 +93,15 @@ async function subirPoliza() {
 
 }
 
-
+// 🔹 Agregar evento al input de archivo para mostrar la vista previa
+document.getElementById('archivo_poliza').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (file) {
+        const preview = document.getElementById('pdf-preview');
+        preview.style.display = 'block';
+        preview.src = URL.createObjectURL(file);
+    }
+});
 
 // 🔹 Agregar evento al botón de subida
 document.getElementById("btn_subir").addEventListener("click", subirPoliza);
