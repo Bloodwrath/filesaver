@@ -1,5 +1,4 @@
 //1.364.2024
-
 //2.0.0
 // Importar PDF.js
 import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.0.375/pdf.min.mjs";
@@ -15,7 +14,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
         try {
             // Leer el contenido del PDF
             const contenidoPDF = await leerContenidoPDF(archivo);
-            console.log("Contenido del PDF:", contenidoPDF); // Mostrar el contenido en la consola
+            //console.log("Contenido del PDF:", contenidoPDF); // Mostrar el contenido en la consola
 
             // Identificar la aseguradora
             let aseguradora = null;
@@ -51,7 +50,7 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("primaTotal").value = extraerprimatotalafirme(contenidoPDF); // Actualizar el campo primaTotal
                     document.getElementById("primaNeta").value = extraerprimanetaafirme(contenidoPDF); // Actualizar el campo primaNeta
                     document.getElementById("niv").value = extraernumeroserieafirme(contenidoPDF); // Actualizar el campo serie
-                    //document.getElementById("nombreasegurado").value = extraernombreafirme(contenidoPDF).toUpperCase(); // Actualizar el campo nombre
+                    document.getElementById("nombreasegurado").value = extraernombreafirme(contenidoPDF).toUpperCase(); // Actualizar el campo nombre
                     var x = document.getElementsByClassName("fila");
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
@@ -379,7 +378,22 @@ function extraernumeroserieafirme(texto) {
 
 // Función para extraer el nombre del asegurado de Afirme
 function extraernombreafirme(texto) {
-
+    const regex2 = /RAFAEL SANTOS GIL ARELLANO\s+(.*?)\s+Número de Póliza/;
+    const match2 = texto.match(regex2);
+    if (match2) {
+        console.log("Nombre del asegurado encontrado:", match2[1]);
+        return match2[1].trim(); // Retornar el nombre encontrado
+    }
+    const regex1 = /DATOS DEL ASEGURADO\s+(.*?)\s+[A-Z]{4}\d{6}[A-Z0-9]{3}/;
+    const match1 = texto.match(regex1);
+    if (match1) {
+        console.log("Nombre del asegurado encontrado:", match1[1]);
+        return match1[1].trim(); // Retornar el nombre encontrado
+    }
+    else {
+        console.warn("No se encontró el nombre del asegurado en el texto.");
+        return null; // Retornar null si no se encuentra ningún nombre
+    }
 }
 
 // 🔹 Función para extraer el número de póliza de Afirme
