@@ -63,3 +63,13 @@ footer {
   width: 90%;
   margin: auto;
 }
+
+@media (max-width: 768px) {
+  iframe {
+    height: 300px !important;
+  }
+
+  #pdf-preview {
+    -webkit-overflow-scrolling: touch;
+  }
+}

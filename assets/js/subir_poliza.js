@@ -94,15 +94,36 @@ async function subirPoliza() {
 }
 
 // 🔹 Agregar evento al input de archivo para mostrar la vista previa
-document.getElementById("archivo_poliza").addEventListener("change", function (e) {
-    const file = e.target.files[0];
-    if (file) {
-        const preview = document.getElementById("pdf-preview");
-        preview.style.display = "block";
-        preview.src = URL.createObjectURL(file);
-    }
-});
+//document.getElementById("archivo_poliza").addEventListener("change", function (e) {
+//    const file = e.target.files[0];
+//    if (file) {
+//        const preview = document.getElementById("pdf-preview");
+//        preview.style.display = "block";
+//        preview.src = URL.createObjectURL(file);
+//    }
+//});
 
 // 🔹 Agregar evento al botón de subida
 document.getElementById("btn_subir").addEventListener("click", subirPoliza);
 
+document.getElementById("archivo_poliza").addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const viewer = document.getElementById('pdf-preview-container');
+    const fileURL = URL.createObjectURL(file);
+
+    // Usa el visor nativo del navegador
+    viewer.src = fileURL;
+
+    // Alternativa para iOS
+    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
+        viewer.innerHTML = `
+            <p>Tu navegador no soporta vista previa directa.</p>
+            <a href="${fileURL}" download="${file.name}" 
+               style="display:block; padding:15px; background:#2196F3; color:white; text-align:center;">
+               Descargar PDF (${(file.size / 1024 / 1024).toFixed(2)} MB)
+            </a>
+        `;
+    }
+});

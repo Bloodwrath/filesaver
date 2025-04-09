@@ -108,4 +108,3 @@ function initializeLoginEvents(loginButton, googleLoginButton, emailInput, passw
             });
     });
 }
-
