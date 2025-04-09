@@ -1,4 +1,4 @@
-//1.364.2024
+//1.365.2024
 //2.0.0
 // Importar Firebase
 import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -93,37 +93,53 @@ async function subirPoliza() {
 
 }
 
-// 🔹 Agregar evento al input de archivo para mostrar la vista previa
-//document.getElementById("archivo_poliza").addEventListener("change", function (e) {
-//    const file = e.target.files[0];
-//    if (file) {
-//        const preview = document.getElementById("pdf-preview");
-//        preview.style.display = "block";
-//        preview.src = URL.createObjectURL(file);
-//    }
-//});
-
 // 🔹 Agregar evento al botón de subida
 document.getElementById("btn_subir").addEventListener("click", subirPoliza);
 
-document.getElementById("archivo_poliza").addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
+document.getElementById('archivo_poliza').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+        const previewContainer = document.getElementById('pdf-preview');
+        previewContainer.innerHTML = '<p>Cargando PDF...</p>';
 
-    const viewer = document.getElementById('pdf-preview-container');
-    const fileURL = URL.createObjectURL(file);
+        const fileReader = new FileReader();
 
-    // Usa el visor nativo del navegador
-    viewer.src = fileURL;
+        fileReader.onload = function () {
+            const typedArray = new Uint8Array(this.result);
 
-    // Alternativa para iOS
-    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/i)) {
-        viewer.innerHTML = `
-            <p>Tu navegador no soporta vista previa directa.</p>
-            <a href="${fileURL}" download="${file.name}" 
-               style="display:block; padding:15px; background:#2196F3; color:white; text-align:center;">
-               Descargar PDF (${(file.size / 1024 / 1024).toFixed(2)} MB)
-            </a>
-        `;
+            // Cargar el PDF
+            pdfjsLib.getDocument(typedArray).promise.then(function (pdf) {
+                previewContainer.innerHTML = '';
+
+                // Mostrar todas las páginas
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    pdf.getPage(i).then(function (page) {
+                        const viewport = page.getViewport({ scale: 1.0 });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+
+                        const pageDiv = document.createElement('div');
+                        pageDiv.className = 'pdf-page';
+                        pageDiv.appendChild(canvas);
+                        previewContainer.appendChild(pageDiv);
+
+                        page.render(renderContext);
+                    });
+                }
+            }).catch(function (error) {
+                previewContainer.innerHTML = '<p>Error al cargar el PDF: ' + error.message + '</p>';
+            });
+        };
+
+        fileReader.readAsArrayBuffer(file);
+    } else {
+        document.getElementById('pdf-preview').innerHTML = '<p>Por favor, selecciona un archivo PDF válido.</p>';
     }
 });

@@ -424,4 +424,3 @@ function extraerpolizaafirme(texto) {
     }
     // Retornar el número de póliza encontrado o null
 }
-
