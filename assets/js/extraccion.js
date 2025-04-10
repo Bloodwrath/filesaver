@@ -452,7 +452,7 @@ let currentScale = 1.0;
 const scaleStep = 0.2;
 
 function mostrarpdfcelular() {
-    const inputfile = document.getElementById("archivo_poliza").files[0];
+    const inputfile = document.getElementById("archivo_poliza");
     const file = inputfile.files[0];
 
     if (file && file.type === 'application/pdf') {
