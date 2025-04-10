@@ -55,6 +55,13 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
                     }
+                    // Uso:
+                    if (esDispositivoMovil()) {
+                        mostrarpdfcelular();
+                        // Ej: Cambiar tamaño de zoom inicial para móviles
+                    } else {
+                        console.log("Estás en una computadora");
+                    }
                     document.getElementById("btn_subir").removeAttribute("disabled");
                 } else if (aseguradora === "Qualitas") {
                     document.getElementById("poliza").value = extraerpolizaqualitas(contenidoPDF);
@@ -65,6 +72,14 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     var x = document.getElementsByClassName("fila");
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
+                    }
+                    // Uso:
+                    if (esDispositivoMovil()) {
+                        console.log("Estás en un dispositivo móvil");
+                        // Ej: Cambiar tamaño de zoom inicial para móviles
+                    } else {
+                        mostrarpdfcompu();
+                        console.log("Estás en una computadora");
                     }
                     document.getElementById("btn_subir").removeAttribute("disabled");
                 }
@@ -426,12 +441,14 @@ function extraerpolizaafirme(texto) {
 }
 
 
-let currentPDF = null;
-let currentScale = 1.0;
-const scaleStep = 0.25;
 
-document.getElementById('archivo_poliza').addEventListener('change', function (event) {
-    const file = event.target.files[0];
+
+function mostrarpdfcelular() {
+    const inputfile = document.getElementById("archivo_poliza").files[0];
+    const file = inputfile.files[0];
+    let currentPDF = null;
+    let currentScale = 1.0;
+    const scaleStep = 0.2
     if (file && file.type === 'application/pdf') {
         // Mostrar controles y visor
         document.getElementById('pdf-controls').style.display = 'flex';
@@ -466,7 +483,7 @@ document.getElementById('archivo_poliza').addEventListener('change', function (e
         // Ocultar controles si no es PDF válido
         document.getElementById('pdf-controls').style.display = 'none';
     }
-});
+};
 
 function renderPDF(pdf, scale) {
     const previewContainer = document.getElementById('pdf-preview');
@@ -524,3 +541,27 @@ document.getElementById('fit-width').addEventListener('click', function () {
         });
     }
 });
+
+function esDispositivoMovil() {
+    // Detección basada en el User-Agent
+    const userAgent = navigator.userAgent.toLowerCase();
+    const esMovil = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+
+    // Combinar con detección de pantalla táctil para mayor precisión
+    const tieneTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    // También considerar el ancho de pantalla (opcional)
+    const anchoPantalla = window.innerWidth;
+
+    return esMovil || tieneTouch || anchoPantalla < 768;
+}
+
+function mostrarpdfcompu() {
+    const inputfile = document.getElementById("archivo_poliza");
+    const file = inputfile.files[0];
+    if (file) {
+        const preview = document.getElementById('pdf-previewcompu');
+        preview.style.display = 'block';
+        preview.src = URL.createObjectURL(file);
+    }
+};
