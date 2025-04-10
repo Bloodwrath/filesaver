@@ -1,4 +1,5 @@
-//1.372.2024
+//1.374.2024
+//2.0.0
 //2.0.0
 // Importar Firebase
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
