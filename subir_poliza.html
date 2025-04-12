@@ -73,9 +73,30 @@
                         <td><label for="primaNeta" class="form-label">Prima Neta:</label></td>
                         <td><input type="text" id="primaNeta" name="primaNeta" class="form-label"
                                 placeholder="Prima Neta" required></td>
-                        <td><label for="nombreasegurado" class="form-label">Prima Neta:</label></td>
+                        <td><label for="nombreasegurado" class="form-label">Nombre de asegurado:</label></td>
                         <td><input type="text" id="nombreasegurado" name="nombre" class="form-label"
                                 placeholder="Nombre del asegurado" required></td>
+                    </tr>
+                    <tr class="fila" style="visibility : collapse">
+                        <td><label for="inicioVigencia" class="form-label">Inicio de vigencia:</label></td>
+                        <td><input type="date" id="inicioVigencia" name="inicoVigencia" class="form-label"
+                                placeholder="Inicio de vigencia" required></td>
+                        <td><label for="finVigencia" class="form-label">Fin de vigencia:</label></td>
+                        <td><input type="date" id="finVigencia" name="finVigencia" class="form-label"
+                                placeholder="Fin de vigencia" required>
+                            <div class="custom-control custom-checkbox" style="visibility: visible;">
+                                <input type="checkbox" class="custom-control-input" id="rutaEconomico">
+                                <label class="custom-control-label" for="rutaEconomico">Agregar ruta y economico</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="filaO" style="visibility : collapse">
+                        <td><label for="economico" class="form-label">Economico:</label></td>
+                        <td><input type="text" id="economico" name="economico" class="form-label"
+                                placeholder="Economico"></td>
+                        <td><label for="Ruta" class="form-label">Ruta:</label></td>
+                        <td><input type="text" id="ruta" name="Ruta" class="form-label" placeholder="Ruta">
+                        </td>
                     </tr>
                 </table>
             </div>

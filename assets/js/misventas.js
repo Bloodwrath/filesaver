@@ -53,11 +53,22 @@ async function mostrarPolizas() {
                 campoFiltro = "poliza";
                 break;
             case 3: // Serie
-                campoFiltro = "NIV"; // Asumiendo que 'Serie' corresponde a 'NIV' en Firestore
+                campoFiltro = "NIV";
                 break;
             case 4:
-                campoFiltro = "nombreAsegurado"
+                campoFiltro = "nombreAsegurado";
                 break;
+            case 5:
+                campoFiltro = "finVigencia";
+                break;
+            case 6:
+                campoFiltro = "inicioVigencia";
+                break;
+            case 7:
+                campoFiltro = "ruta";
+                break;
+            case 8:
+                campoFiltro = "economico";
             default:
                 console.warn("Opción de filtro no válida:", opcionValue);
                 // Opcional: Mostrar todas si la opción no es válida pero hay texto
@@ -102,16 +113,15 @@ async function mostrarPolizas() {
         if (querySnapshot.empty) {
             listaArchivosHTML += `<tr><td colspan="4" class="text-center">No se encontraron pólizas ${filtradorValue ? 'con ese filtro' : 'para este usuario'}.</td></tr>`;
         } else {
-            var suma = 0;
             querySnapshot.forEach((doc) => {
                 const datos = doc.data();
                 const base64Archivo = datos.urlArchivo; // Asumiendo que es base64
                 const aseguradora = datos.aseguradora || 'N/A';
                 const poliza = datos.poliza || 'N/A';
                 const serie = datos.NIV || 'N/A'; // Usar NIV como 'Serie'
-                var primatotal = datos.primaTotal;
-                suma += primatotal;
-                console.log("prima total", primatotal)
+                const primatotal = datos.primaTotal;
+                const fechapoliza = datos.fechaSubida;
+                console.log(fechapoliza);
                 listaArchivosHTML += `
                     <tr>
                         <td>${aseguradora}</td>
@@ -125,7 +135,6 @@ async function mostrarPolizas() {
                     </tr>
                 `;
             });
-            console.log("prima total", suma)
         }
 
         listaArchivosHTML += '</tbody></table></div>';
@@ -143,7 +152,10 @@ async function mostrarPolizas() {
 
 // 🔹 Event Listener para el botón de buscar
 document.getElementById("filtrador").addEventListener("input", mostrarPolizas);
-document.getElementById("opcion").addEventListener("change", mostrarPolizas);
+document.getElementById("opcion").addEventListener("change", function () {
+    cambiarTipo();
+});
+
 
 // Opcional: Filtrar también al presionar Enter en el input
 document.getElementById("filtrador").addEventListener("keypress", (event) => {
@@ -152,3 +164,23 @@ document.getElementById("filtrador").addEventListener("keypress", (event) => {
         mostrarPolizas();
     }
 });
+
+document.getElementById('mostrarFecha').addEventListener('click', function () {
+    const fechaInput = document.getElementById('fechaInicio').value;
+
+    console.log('Fecha ingresada (formato YYYY-MM-DD):', fechaInput);
+});
+
+function cambiarTipo() {
+    var x = document.getElementById("opcion").value;
+    mostrarPolizas();
+    if (x == 5 || x == 6) {
+        const input = document.getElementById('filtrador');
+        input.type = 'date';  // Cambia el tipo
+        input.placeholder = "Selecciona una fecha";  // Opcional: Cambiar placeholder
+    } else {
+        const input = document.getElementById('filtrador');
+        input.type = 'text';  // Cambia el tipo
+        input.placeholder = "Buscar";
+    }
+}

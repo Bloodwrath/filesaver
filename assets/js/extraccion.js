@@ -40,6 +40,8 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("primaTotal").value = extraerprimatotalbanorte(contenidoPDF); // Actualizar el campo primaTotal
                     document.getElementById("niv").value = extraernumeroseriebanorte(contenidoPDF); // Actualizar el campo serie
                     document.getElementById("nombreasegurado").value = extraernombrebanorte(contenidoPDF).toUpperCase(); // Actualizar el campo nombre
+                    document.getElementById("inicioVigencia").value = extraerfechainiciobanorte(contenidoPDF);
+                    document.getElementById("finVigencia").value = extraerfechafinbanorte(contenidoPDF);
                     var x = document.getElementsByClassName("fila");
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
@@ -59,6 +61,8 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("primaNeta").value = extraerprimanetaafirme(contenidoPDF); // Actualizar el campo primaNeta
                     document.getElementById("niv").value = extraernumeroserieafirme(contenidoPDF); // Actualizar el campo serie
                     document.getElementById("nombreasegurado").value = extraernombreafirme(contenidoPDF).toUpperCase(); // Actualizar el campo nombre
+                    document.getElementById("inicioVigencia").value = extraerfechainicioafirme(contenidoPDF);
+                    document.getElementById("finVigencia").value = extraerfechafinafirme(contenidoPDF);
                     var x = document.getElementsByClassName("fila");
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
@@ -77,6 +81,8 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("primaNeta").value = extraerprimanetaqualitas(contenidoPDF);
                     document.getElementById("niv").value = extraernumeroseriequalitas(contenidoPDF); // Actualizar el campo serie
                     document.getElementById("nombreasegurado").value = extraernombrequalitas(contenidoPDF).toUpperCase(); // Actualizar el campo nombre
+                    document.getElementById("inicioVigencia").value = extraerfechainicioqualitas(contenidoPDF);
+                    document.getElementById("finVigencia").value = extraerfechafinqualitas(contenidoPDF);
                     var x = document.getElementsByClassName("fila");
                     for (var i = 0; i < x.length; i++) {
                         x[i].style.visibility = "visible";
@@ -140,7 +146,7 @@ async function leerContenidoPDF(archivo) {
 
                     paginaActual++;
                 }
-
+                console.log(textoCompleto)
                 resolve(textoCompleto); // Devolver el texto completo del PDF
             } catch (error) {
                 reject(error); // Manejar errores
@@ -234,6 +240,28 @@ function extraernumeroseriebanorte(texto) {
     }
 }
 
+function extraerfechainiciobanorte(texto) {
+    const regex1 = /(\d{2}\/[A-Z]{3}\/\d{4})(?=\s+Reducción:)/i;
+    const match1 = texto.match(regex1);
+    if (match1) {
+        const fechaExtraida = match1[1]; // Ej: "21/JUN/2023"
+        const fechaFormateada = formatearFechaParaInputDate(fechaExtraida);
+        console.log(fechaFormateada); // Ej: "2023-06-21"
+        return fechaFormateada;
+    } return null;
+}
+
+function extraerfechafinbanorte(texto) {
+    const regex1 = /(\d{2}\/[A-Z]{3}\/\d{4})(?=\s+Recargo:)/i;
+    const match1 = texto.match(regex1);
+    if (match1) {
+        const fechaExtraida = match1[1]; // Ej: "21/JUN/2023"
+        const fechaFormateada = formatearFechaParaInputDate(fechaExtraida);
+        console.log(fechaFormateada); // Ej: "2023-06-21"
+        return fechaFormateada;
+    } return null;
+}
+
 // Función para extraer la prima total de Qualitas
 function extraerprimatotalqualitas(texto) {
     // Primer formato: Capturar el número entre "Aplicada:" y "Funcionario Autorizado"
@@ -321,6 +349,47 @@ function extraernumeroseriequalitas(texto) {
     console.warn("No se encontró el número de serie en el texto.");
     return null; // Retornar null si no se encuentra ningún número de serie
 }
+
+function extraerfechainicioqualitas(texto) {
+    const regex1 = /Fecha Vencimiento del pago: Plazo de pago: Uso: Servicio: Movimiento:\s*(\d{2}\/[A-Z]{3}\/\d{4})/i;
+    const match1 = texto.match(regex1);
+    if (match1) {
+        const fechaExtraida = match1[1]; // Ej: "21/JUN/2023"
+        const fechaFormateada = formatearFechaParaInputDate(fechaExtraida);
+        console.log(fechaFormateada); // Ej: "2023-06-21"
+        return fechaFormateada;
+    }
+    const regex2 = /(\d{2}\/[A-Z]{3}\/\d{4})\s+(\d{2}\/[A-Z]{3}\/\d{4})\s+OBLIGATORIO, por lo que no podrán cesar en sus efectos,/i;
+    const match2 = texto.match(regex2);
+    if (match2) {
+        const fechaExtraida = match2[1]; // Ej: "21/JUN/2023"
+        const fechaFormateada = formatearFechaParaInputDate(fechaExtraida);
+        console.log(fechaFormateada); // Ej: "2023-06-21"
+        return fechaFormateada;
+    }
+    return null;
+}
+
+function extraerfechafinqualitas(texto) {
+    const regex1 = /Fecha Vencimiento del pago: Plazo de pago: Uso: Servicio: Movimiento:\s*\d{2}\/[A-Z]{3}\/\d{4}\s+(\d{2}\/[A-Z]{3}\/\d{4})/i;
+    const match1 = texto.match(regex1);
+    if (match1) {
+        const fechaExtraida = match1[1]; // Ej: "21/JUN/2023"
+        const fechaFormateada = formatearFechaParaInputDate(fechaExtraida);
+        console.log(fechaFormateada); // Ej: "2023-06-21"
+        return fechaFormateada;
+    }
+    const regex2 = /(\d{2}\/[A-Z]{3}\/\d{4})\s+OBLIGATORIO, por lo que no podrán cesar en sus efectos,/i;
+    const match2 = texto.match(regex2);
+    if (match2) {
+        const fechaExtraida = match2[1]; // Ej: "21/JUN/2023"
+        const fechaFormateada = formatearFechaParaInputDate(fechaExtraida);
+        console.log(fechaFormateada); // Ej: "2023-06-21"
+        return fechaFormateada;
+    }
+    return null;
+}
+
 
 // Función para extraer el nombre del asegurado de Qualitas
 function extraernombrequalitas(texto) {
@@ -445,6 +514,32 @@ function extraerpolizaafirme(texto) {
         return; // Retornar null si no se encuentra ningún número de serie
     }
     // Retornar el número de póliza encontrado o null
+}
+
+function extraerfechainicioafirme(texto) {
+    const regex = /Número de Póliza Vigencia Desde: Hasta:\s*(\d{2}\/\d{2}\/\d{4})/;
+    const match = texto.match(regex);
+
+    if (match && match[1]) {
+        const fechaExtraida = match[1];
+        const fechaFormateada = formatearFecha(fechaExtraida);
+        console.log(fechaFormateada);
+        return fechaFormateada;
+    }
+    return null; // Si no encuentra la fecha
+}
+
+function extraerfechafinafirme(texto) {
+    const regex = /Número de Póliza Vigencia Desde: Hasta:\s*\d{2}\/\d{2}\/\d{4}\s+(\d{2}\/\d{2}\/\d{4})/;
+    const match = texto.match(regex);
+
+    if (match && match[1]) {
+        const fechaExtraida = match[1];
+        const fechaFormateada = formatearFecha(fechaExtraida);
+        console.log(fechaFormateada);
+        return fechaFormateada;
+    }
+    return null; // Si no encuentra la fecha
 }
 
 
@@ -572,3 +667,34 @@ function mostrarpdfcompu() {
         preview.src = URL.createObjectURL(file);
     }
 };
+
+// Función auxiliar para convertir el formato
+function formatearFechaParaInputDate(fechaDDMMMAAAA) {
+    // Mapeo de meses abreviados a números
+    const meses = {
+        'ENE': '01', 'JAN': '01',
+        'FEB': '02', 'FEB': '02',
+        'MAR': '03', 'MAR': '03',
+        'ABR': '04', 'APR': '04',
+        'MAY': '05', 'MAY': '05',
+        'JUN': '06', 'JUN': '06',
+        'JUL': '07', 'JUL': '07',
+        'AGO': '08', 'AUG': '08',
+        'SEP': '09', 'SEP': '09',
+        'OCT': '10', 'OCT': '10',
+        'NOV': '11', 'NOV': '11',
+        'DIC': '12', 'DEC': '12'
+    };
+
+    const [dia, mesAbbr, anio] = fechaDDMMMAAAA.split('/');
+    const mesNumero = meses[mesAbbr.toUpperCase()] || '01'; // Si no encuentra el mes, usa '01'
+
+    // Formato YYYY-MM-DD (requerido por input date)
+    return `${anio}-${mesNumero}-${dia.padStart(2, '0')}`;
+}
+
+function formatearFecha(fechaDDMMYYYY) {
+    const [dia, mes, anio] = fechaDDMMYYYY.split('/');
+    return `${anio}-${mes}-${dia.padStart(2, '0')}`;
+}
+

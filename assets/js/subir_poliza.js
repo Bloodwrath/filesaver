@@ -41,14 +41,19 @@ async function subirPoliza() {
         return;
     }
 
-    const aseguradora = document.getElementById("aseguradora").value.toUpperCase(); // Obtener el valor de aseguradora y convertir a mayúsculas
-    const archivoInput = document.getElementById("archivo_poliza");
-    const primatotal = parseFloat(document.getElementById("primaTotal").value.replace(/,/g, '')); // Eliminar comas
-    const primaneta = parseFloat(document.getElementById("primaNeta").value.replace(/,/g, '')); // Eliminar comas
-    const serie = document.getElementById("niv").value.toUpperCase(); // Obtener el valor de NIV
-    const nombreasegurado = document.getElementById("nombreasegurado").value.toUpperCase(); // Obtener el nombre asegurado
-    const archivo = archivoInput.files[0];
-    const Poliza = document.getElementById("poliza").value; // Obtener el valor de póliza
+    const aseguradora = document.getElementById("aseguradora").value.toUpperCase(), // Obtener el valor de aseguradora y convertir a mayúsculas
+        archivoInput = document.getElementById("archivo_poliza"),
+        primatotal = parseFloat(document.getElementById("primaTotal").value.replace(/,/g, '')), // Eliminar comas
+        primaneta = parseFloat(document.getElementById("primaNeta").value.replace(/,/g, '')), // Eliminar comas
+        serie = document.getElementById("niv").value.toUpperCase(), // Obtener el valor de NIV
+        nombreasegurado = document.getElementById("nombreasegurado").value.toUpperCase(), // Obtener el nombre asegurado
+        archivo = archivoInput.files[0],
+        Poliza = document.getElementById("poliza").value, // Obtener el valor de póliza
+        fechaInicio = document.getElementById("inicioVigencia").value,
+        fechaFin = document.getElementById("finVigencia").value,
+        Ruta = document.getElementById("ruta").value,
+        Economico = document.getElementById("economico").value;
+
 
     // Validar que se haya seleccionado una aseguradora y un archivo
     if (!aseguradora || !archivo) {
@@ -80,12 +85,16 @@ async function subirPoliza() {
             NIV: serie, // Provide a default value or remove this line if not needed
             primaTotal: primatotal, // Guardar el valor de primaNeta
             primaNeta: primaneta, // Provide a default value or remove this line if not needed
-            fechaSubida: new Date().toISOString(),
+            inicioVigencia: fechaInicio,
+            finVigencia: fechaFin,
+            ruta: Ruta,
+            economico: Economico,
             usuario: currentUser.email,// Guardar el correo del usuario autenticado
             nombreAsegurado: nombreasegurado, // Guardar el nombre asegurado
             poliza: Poliza // Guardar el valor de póliza
         });
         alert("Póliza subida con éxito.");
+        location.reload();
     }
     catch (error) {
         console.error("Error al subir la póliza:", error);
@@ -96,3 +105,19 @@ async function subirPoliza() {
 
 // 🔹 Agregar evento al botón de subida
 document.getElementById("btn_subir").addEventListener("click", subirPoliza);
+
+document.getElementById("rutaEconomico").addEventListener("click", function () {
+    var x = document.getElementById("rutaEconomico");
+    if (x.checked) {
+        var y = document.getElementById("filaO");
+        y.style.visibility = "visible";
+        document.getElementById("economico").setAttribute("required", "");
+        document.getElementById("ruta").setAttribute("required", "");
+    } else {
+        var y = document.getElementById("filaO");
+        y.style.visibility = "hidden";
+        document.getElementById("economico").removeAttribute("required");
+        document.getElementById("ruta").removeAttribute("required");
+    }
+});
+

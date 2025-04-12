@@ -102,7 +102,6 @@ async function mostrarPolizas() {
         if (querySnapshot.empty) {
             listaArchivosHTML += `<tr><td colspan="4" class="text-center">No se encontraron pólizas ${filtradorValue ? 'con ese filtro' : 'para este usuario'}.</td></tr>`;
         } else {
-            var suma = 0;
             querySnapshot.forEach((doc) => {
                 const datos = doc.data();
                 const base64Archivo = datos.urlArchivo; // Asumiendo que es base64
@@ -110,8 +109,6 @@ async function mostrarPolizas() {
                 const poliza = datos.poliza || 'N/A';
                 const serie = datos.NIV || 'N/A'; // Usar NIV como 'Serie'
                 var primatotal = datos.primaTotal;
-                suma += primatotal;
-                console.log("prima total", primatotal)
                 listaArchivosHTML += `
                     <tr>
                         <td>${aseguradora}</td>
@@ -125,7 +122,6 @@ async function mostrarPolizas() {
                     </tr>
                 `;
             });
-            console.log("prima total", suma)
         }
 
         listaArchivosHTML += '</tbody></table></div>';
