@@ -21,16 +21,13 @@ document.addEventListener("DOMContentLoaded", () => {
             mostrarPolizas();
         } else {
             console.warn("No hay un usuario autenticado. Redirigiendo a la página de inicio de sesión...");
-            alert("Debes iniciar sesión para subir una póliza o ver tus archivos.");
-            window.location.href = "index.html"; // Redirigir a la página de inicio de sesión
+            mensajeErrorR("Debes iniciar sesión para subir una póliza o ver tus archivos.", "index.html");
         }
     });
 });
 
-// 🔹 Función para mostrar las pólizas (con opción de filtrado)
 async function mostrarPolizas() {
     if (!currentUser) {
-        console.error("Intento de mostrar pólizas sin usuario autenticado.");
         return;
     }
 
@@ -38,41 +35,38 @@ async function mostrarPolizas() {
     const filtradorValue = document.getElementById("filtrador").value.toUpperCase().trim(); // Obtener valor del input y quitar espacios
 
     const polizasRef = collection(db, "polizas");
-    let consulta = query(polizasRef, where("usuario", "==", currentUser.email)); // Consulta base
+    let consulta = query(polizasRef); // Consulta base
+    let campoFiltro = "";
 
     // Aplicar filtro si se seleccionó una opción y se ingresó texto
     if (filtradorValue && opcionValue !== 'Choose...') {
-        const opcionInt = parseInt(opcionValue);
-        let campoFiltro = "";
 
-        switch (opcionInt) {
-            case 1: // Aseguradora
-                campoFiltro = "aseguradora";
-                break;
-            case 2: // No. poliza
-                campoFiltro = "poliza";
-                break;
-            case 3: // Serie
-                campoFiltro = "NIV"; // Asumiendo que 'Serie' corresponde a 'NIV' en Firestore
-                break;
-            case 4:
-                campoFiltro = "nombreAsegurado"
-                break;
+        switch (opcionValue) {
+            case "1": campoFiltro = "aseguradora"; break;
+            case "2": campoFiltro = "poliza"; break;
+            case "3": campoFiltro = "NIV"; break;
+            case "4": campoFiltro = "nombreAsegurado"; break;
+            case "5": campoFiltro = "finVigencia"; break;
+            case "6": campoFiltro = "inicioVigencia"; break;
+            case "7": campoFiltro = "ruta"; break;
+            case "8": campoFiltro = "economico"; break;
             default:
-                console.warn("Opción de filtro no válida:", opcionValue);
-                // Opcional: Mostrar todas si la opción no es válida pero hay texto
-                // consulta = query(polizasRef, where("usuario", "==", currentUser.email));
-                // break; // Salir del switch si no hay filtro válido
-                document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona una opción de filtro válida.</p>';
-                return; // No continuar si la opción no es válida
+                console.warn("Opción inválida:", opcionValue);
+                return; // no hacer la consulta si no es válido
+            // Salir del switch si no hay filtro válido
+            //document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona una opción de filtro válida.</p>';
+            //return; // No continuar si la opción no es válida
         }
         // Construir la consulta con el filtro dinámico
         // Nota: Firestore requiere índices compuestos para consultas con where() y orderBy() o múltiples where() en campos diferentes.
         // Si usas ==, >=, <=, >, < en diferentes campos, necesitarás crear un índice en la consola de Firebase.
         // Para búsquedas tipo "contiene" (like), Firestore no tiene soporte directo. Se necesitaría una solución externa (e.g., Algolia) o filtrar en el cliente.
         // Aquí usamos '==' para coincidencias exactas.
+        if (!campoFiltro) {
+            document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona un filtro válido.</p>';
+            return;
+        }
         consulta = query(polizasRef,
-            where("usuario", "==", currentUser.email),
             where(campoFiltro, "==", filtradorValue)
         );
 
@@ -94,6 +88,9 @@ async function mostrarPolizas() {
                         <th>Aseguradora</th>
                         <th>No. Póliza</th>
                         <th>Serie/NIV</th>
+                        <th>Inicio de vigencia</th>
+                        <th>Fin de vigencia</th>
+                        <th>Prima Total</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
@@ -108,12 +105,17 @@ async function mostrarPolizas() {
                 const aseguradora = datos.aseguradora || 'N/A';
                 const poliza = datos.poliza || 'N/A';
                 const serie = datos.NIV || 'N/A'; // Usar NIV como 'Serie'
-                var primatotal = datos.primaTotal;
+                const primatotal = datos.primaTotal.toLocaleString("en-US", { minimumFractionDigits: 2 });
+                const fechaInicio = datos.inicioVigencia;
+                const fechaFin = datos.finVigencia;
                 listaArchivosHTML += `
                     <tr>
                         <td>${aseguradora}</td>
                         <td>${poliza}</td>
                         <td>${serie}</td>
+                        <td>${fechaInicio}</td>
+                        <td>${fechaFin}</td>
+                        <td>${primatotal}</td>
                         <td>
                             <a class="btn btn-primary btn-sm" href="data:application/pdf;base64,${base64Archivo}" download="poliza_${aseguradora}_${poliza}.pdf">
                                 Descargar PDF
@@ -137,9 +139,12 @@ async function mostrarPolizas() {
     }
 }
 
+
 // 🔹 Event Listener para el botón de buscar
 document.getElementById("filtrador").addEventListener("input", mostrarPolizas);
-document.getElementById("opcion").addEventListener("change", mostrarPolizas);
+document.getElementById("opcion").addEventListener("change", function () {
+    cambiarTipo();
+});
 
 // Opcional: Filtrar también al presionar Enter en el input
 document.getElementById("filtrador").addEventListener("keypress", (event) => {
@@ -148,3 +153,17 @@ document.getElementById("filtrador").addEventListener("keypress", (event) => {
         mostrarPolizas();
     }
 });
+
+function cambiarTipo() {
+    var x = document.getElementById("opcion").value;
+    mostrarPolizas();
+    if (x == 5 || x == 6) {
+        const input = document.getElementById('filtrador');
+        input.type = 'date';  // Cambia el tipo
+        input.placeholder = "Selecciona una fecha";  // Opcional: Cambiar placeholder
+    } else {
+        const input = document.getElementById('filtrador');
+        input.type = 'text';  // Cambia el tipo
+        input.placeholder = "Buscar";
+    }
+}

@@ -1,4 +1,4 @@
-async function mensajeAdvertencia ( mensaje ) {
+async function mensajeAdvertencia(mensaje) {
     Swal.fire({
         position: 'center',
         icon: 'warning',
@@ -19,6 +19,17 @@ async function mensajeDeExito(mensaje, redireccion) {
         window.location = redireccion;
     })
 }
+async function mensajeDeExitoR(mensaje) {
+    Swal.fire({
+        position: 'center',
+        icon: 'success',
+        title: mensaje,
+        showConfirmButton: false,
+        timer: 2500
+    }).then(async function () {
+        window.location.reload();
+    })
+}
 
 async function mensajeDeExitoS(mensaje) {
     Swal.fire({
@@ -28,6 +39,28 @@ async function mensajeDeExitoS(mensaje) {
         showConfirmButton: false,
         timer: 2500
     })
+}
+
+async function mensajeErrorR(mensaje, redireccion) {
+    Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: mensaje,
+        showConfirmButton: true,
+        timer: 2000
+    }).then(async function () {
+        window.location = redireccion;
+    })
+}
+
+async function mensajeError(mensaje) {
+    Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: mensaje,
+        showConfirmButton: true,
+        timer: 2000
+    });
 }
 
 function agregadoAlCarrito() {
@@ -47,7 +80,7 @@ function agregadoAlCarrito() {
     })
 }
 
- function procesandoPago() {
+function procesandoPago() {
     Swal.fire({
         title: 'Procesando pago...',
         width: 600,
@@ -61,7 +94,7 @@ function agregadoAlCarrito() {
     `,
         timer: 5000,
         showConfirmButton: false
-    }).then(()=>{
+    }).then(() => {
         pagoExitoso();
     })
 }

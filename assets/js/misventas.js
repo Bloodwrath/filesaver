@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             mostrarPolizas();
         } else {
             console.warn("No hay un usuario autenticado. Redirigiendo a la página de inicio de sesión...");
-            alert("Debes iniciar sesión para subir una póliza o ver tus archivos.");
+            mensajeAdvertencia("Debes iniciar sesión para ver tus archivos.");
             window.location.href = "index.html"; // Redirigir a la página de inicio de sesión
         }
     });
@@ -30,73 +30,62 @@ document.addEventListener("DOMContentLoaded", () => {
 // 🔹 Función para mostrar las pólizas (con opción de filtrado)
 async function mostrarPolizas() {
     if (!currentUser) {
-        console.error("Intento de mostrar pólizas sin usuario autenticado.");
         return;
     }
 
     const opcionValue = document.getElementById("opcion").value;
     const filtradorValue = document.getElementById("filtrador").value.toUpperCase().trim(); // Obtener valor del input y quitar espacios
 
-    const polizasRef = collection(db, "polizas");
-    let consulta = query(polizasRef, where("usuario", "==", currentUser.email)); // Consulta base
+    const polizasRef = collection(db, "polizas", where("usuario", "==", currentUser.email));
+    let consulta = query(polizasRef); // Consulta base
 
     // Aplicar filtro si se seleccionó una opción y se ingresó texto
     if (filtradorValue && opcionValue !== 'Choose...') {
-        const opcionInt = parseInt(opcionValue);
         let campoFiltro = "";
 
-        switch (opcionInt) {
-            case 1: // Aseguradora
-                campoFiltro = "aseguradora";
-                break;
-            case 2: // No. poliza
-                campoFiltro = "poliza";
-                break;
-            case 3: // Serie
-                campoFiltro = "NIV";
-                break;
-            case 4:
-                campoFiltro = "nombreAsegurado";
-                break;
-            case 5:
-                campoFiltro = "finVigencia";
-                break;
-            case 6:
-                campoFiltro = "inicioVigencia";
-                break;
-            case 7:
-                campoFiltro = "ruta";
-                break;
-            case 8:
-                campoFiltro = "economico";
-            default:
-                console.warn("Opción de filtro no válida:", opcionValue);
-                // Opcional: Mostrar todas si la opción no es válida pero hay texto
-                // consulta = query(polizasRef, where("usuario", "==", currentUser.email));
-                // break; // Salir del switch si no hay filtro válido
-                document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona una opción de filtro válida.</p>';
-                return; // No continuar si la opción no es válida
+        // Aplicar filtro si se seleccionó una opción y se ingresó texto
+        if (filtradorValue && opcionValue !== 'Choose...') {
+
+            switch (opcionValue) {
+                case "1": campoFiltro = "aseguradora"; break;
+                case "2": campoFiltro = "poliza"; break;
+                case "3": campoFiltro = "NIV"; break;
+                case "4": campoFiltro = "nombreAsegurado"; break;
+                case "5": campoFiltro = "finVigencia"; break;
+                case "6": campoFiltro = "inicioVigencia"; break;
+                case "7": campoFiltro = "ruta"; break;
+                case "8": campoFiltro = "economico"; break;
+                default:
+                    console.warn("Opción inválida:", opcionValue);
+                    return; // no hacer la consulta si no es válido
+                // Salir del switch si no hay filtro válido
+                //document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona una opción de filtro válida.</p>';
+                //return; // No continuar si la opción no es válida
+            }
+            // Construir la consulta con el filtro dinámico
+            // Nota: Firestore requiere índices compuestos para consultas con where() y orderBy() o múltiples where() en campos diferentes.
+            // Si usas ==, >=, <=, >, < en diferentes campos, necesitarás crear un índice en la consola de Firebase.
+            // Para búsquedas tipo "contiene" (like), Firestore no tiene soporte directo. Se necesitaría una solución externa (e.g., Algolia) o filtrar en el cliente.
+            // Aquí usamos '==' para coincidencias exactas.
+            if (!campoFiltro) {
+                document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona un filtro válido.</p>';
+                return;
+            }
+            consulta = query(polizasRef,
+                where("usuario", "==", currentUser.email),
+                where(campoFiltro, "==", filtradorValue)
+            );
+
+        } else if (filtradorValue && opcionValue === 'Choose...') {
+            document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona por qué campo deseas filtrar.</p>';
+            return; // No continuar si no se seleccionó opción
         }
-        // Construir la consulta con el filtro dinámico
-        // Nota: Firestore requiere índices compuestos para consultas con where() y orderBy() o múltiples where() en campos diferentes.
-        // Si usas ==, >=, <=, >, < en diferentes campos, necesitarás crear un índice en la consola de Firebase.
-        // Para búsquedas tipo "contiene" (like), Firestore no tiene soporte directo. Se necesitaría una solución externa (e.g., Algolia) o filtrar en el cliente.
-        // Aquí usamos '==' para coincidencias exactas.
-        consulta = query(polizasRef,
-            where("usuario", "==", currentUser.email),
-            where(campoFiltro, "==", filtradorValue)
-        );
-
-    } else if (filtradorValue && opcionValue === 'Choose...') {
-        document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona por qué campo deseas filtrar.</p>';
-        return; // No continuar si no se seleccionó opción
-    }
 
 
-    // --- Ejecutar consulta y mostrar resultados ---
-    try {
-        const querySnapshot = await getDocs(consulta);
-        let listaArchivosHTML = `
+        // --- Ejecutar consulta y mostrar resultados ---
+        try {
+            const querySnapshot = await getDocs(consulta);
+            let listaArchivosHTML = `
                 <h3>Tus archivos:</h3>
                 <div class="table-responsive">
                 <table class="table table-hover table-secondary">
@@ -110,19 +99,19 @@ async function mostrarPolizas() {
                 </thead>
                 <tbody>`;
 
-        if (querySnapshot.empty) {
-            listaArchivosHTML += `<tr><td colspan="4" class="text-center">No se encontraron pólizas ${filtradorValue ? 'con ese filtro' : 'para este usuario'}.</td></tr>`;
-        } else {
-            querySnapshot.forEach((doc) => {
-                const datos = doc.data();
-                const base64Archivo = datos.urlArchivo; // Asumiendo que es base64
-                const aseguradora = datos.aseguradora || 'N/A';
-                const poliza = datos.poliza || 'N/A';
-                const serie = datos.NIV || 'N/A'; // Usar NIV como 'Serie'
-                const primatotal = datos.primaTotal;
-                const fechapoliza = datos.fechaSubida;
-                console.log(fechapoliza);
-                listaArchivosHTML += `
+            if (querySnapshot.empty) {
+                listaArchivosHTML += `<tr><td colspan="4" class="text-center">No se encontraron pólizas ${filtradorValue ? 'con ese filtro' : 'para este usuario'}.</td></tr>`;
+            } else {
+                querySnapshot.forEach((doc) => {
+                    const datos = doc.data();
+                    const base64Archivo = datos.urlArchivo; // Asumiendo que es base64
+                    const aseguradora = datos.aseguradora || 'N/A';
+                    const poliza = datos.poliza || 'N/A';
+                    const serie = datos.NIV || 'N/A'; // Usar NIV como 'Serie'
+                    const primatotal = datos.primaTotal;
+                    const fechapoliza = datos.fechaSubida;
+                    console.log(fechapoliza);
+                    listaArchivosHTML += `
                     <tr>
                         <td>${aseguradora}</td>
                         <td>${poliza}</td>
@@ -134,18 +123,19 @@ async function mostrarPolizas() {
                         </td>
                     </tr>
                 `;
-            });
-        }
+                });
+            }
 
-        listaArchivosHTML += '</tbody></table></div>';
-        document.getElementById("tablaPolizas").innerHTML = listaArchivosHTML;
+            listaArchivosHTML += '</tbody></table></div>';
+            document.getElementById("tablaPolizas").innerHTML = listaArchivosHTML;
 
-    } catch (error) {
-        console.error("Error al obtener las pólizas:", error);
-        document.getElementById("tablaPolizas").innerHTML = '<p class="text-danger">Error al cargar las pólizas. Intenta de nuevo más tarde.</p>';
-        // Considerar mostrar un mensaje más específico si es un error de índice compuesto
-        if (error.code === 'failed-precondition') {
-            document.getElementById("tablaPolizas").innerHTML += '<p class="text-warning">Es posible que se requiera un índice compuesto en Firestore para esta consulta. Revisa la consola de Firebase.</p>';
+        } catch (error) {
+            console.error("Error al obtener las pólizas:", error);
+            document.getElementById("tablaPolizas").innerHTML = '<p class="text-danger">Error al cargar las pólizas. Intenta de nuevo más tarde.</p>';
+            // Considerar mostrar un mensaje más específico si es un error de índice compuesto
+            if (error.code === 'failed-precondition') {
+                document.getElementById("tablaPolizas").innerHTML += '<p class="text-warning">Es posible que se requiera un índice compuesto en Firestore para esta consulta. Revisa la consola de Firebase.</p>';
+            }
         }
     }
 }
@@ -163,12 +153,6 @@ document.getElementById("filtrador").addEventListener("keypress", (event) => {
         event.preventDefault(); // Evitar envío de formulario si lo hubiera
         mostrarPolizas();
     }
-});
-
-document.getElementById('mostrarFecha').addEventListener('click', function () {
-    const fechaInput = document.getElementById('fechaInicio').value;
-
-    console.log('Fecha ingresada (formato YYYY-MM-DD):', fechaInput);
 });
 
 function cambiarTipo() {

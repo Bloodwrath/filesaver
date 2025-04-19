@@ -97,14 +97,14 @@ document.getElementById("archivo_poliza").addEventListener("change", async (even
                     document.getElementById("btn_subir").removeAttribute("disabled");
                 }
             } else {
-                alert("No se pudo identificar la aseguradora en el archivo.");
+                mensajeAdvertencia("No se pudo identificar la aseguradora en el archivo.");
             }
         } catch (error) {
             console.error("Error al leer el PDF:", error);
-            alert("Hubo un error al leer el archivo PDF.");
+            mensajeError("Hubo un error al leer el archivo PDF.");
         }
     } else {
-        alert("Por favor, selecciona un archivo PDF válido.");
+        mensajeAdvertencia("Por favor, selecciona un archivo PDF válido.");
     }
 });
 
@@ -698,3 +698,12 @@ function formatearFecha(fechaDDMMYYYY) {
     return `${anio}-${mes}-${dia.padStart(2, '0')}`;
 }
 
+// 🔹 Función para convertir un archivo a Base64
+export function convertirArchivoABase64(archivo) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(",")[1]); // Obtener solo la parte Base64
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(archivo);
+    });
+}

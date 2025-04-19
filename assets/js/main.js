@@ -1,5 +1,20 @@
 // 🔹 Inicializar Firebase
-import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import {
+    getAuth,
+    onAuthStateChanged,
+    signOut,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    GoogleAuthProvider
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import {
+    getFirestore,
+    collection,
+    query,
+    where,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
 import { app } from "./firebaseKey.js";
 
 // 🔹 Función principal que se ejecuta al cargar el DOM
@@ -7,7 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const header = document.getElementById("header");
     const auth = getAuth(app);
 
-    // 🔹 Observador para detectar cambios en el DOM del header
     const observer = new MutationObserver(() => {
         const loginButton = document.getElementById("INICIAR SESION");
         const googleLoginButton = document.getElementById("google-login");
@@ -15,14 +29,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const passwordInput = document.getElementById("password");
 
         if (loginButton && googleLoginButton && emailInput && passwordInput) {
-            observer.disconnect(); // Detener el observador una vez que los elementos se encuentren
+            observer.disconnect();
             initializeLoginEvents(loginButton, googleLoginButton, emailInput, passwordInput);
         }
     });
 
     observer.observe(header, { childList: true, subtree: true });
 
-    // 🔹 Actualizar el header según el estado de autenticación
     onAuthStateChanged(auth, (user) => {
         if (user) {
             header.id = "header2";
@@ -33,22 +46,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     const usernameElement = document.getElementById("username");
                     if (usernameElement) {
                         usernameElement.textContent = user.displayName || user.email;
-                    } else {
-                        console.warn("El elemento con ID 'username' no se encontró en header2.html.");
                     }
 
                     const logoutButton = document.getElementById("logout");
                     if (logoutButton) {
                         logoutButton.addEventListener("click", function () {
                             signOut(auth)
-                                .then(() => {
-                                    console.log("Usuario cerró sesión.");
-                                    location.reload();
-                                })
+                                .then(() => mensajeDeExitoR(""))
                                 .catch((error) => console.error("Error al cerrar sesión:", error));
                         });
-                    } else {
-                        console.error("El botón de logout no se encontró en header2.html.");
                     }
                 })
                 .catch(error => console.error("Error al cargar header2.html:", error));
@@ -63,48 +69,89 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// 🔹 Función para inicializar los eventos del formulario de login
+// 🔹 Función para inicializar eventos de login
 function initializeLoginEvents(loginButton, googleLoginButton, emailInput, passwordInput) {
     const auth = getAuth(app);
+    const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
     // 🔹 Login con correo y contraseña
-    loginButton.addEventListener("click", function (event) {
+    loginButton.addEventListener("click", async function (event) {
         event.preventDefault();
 
         const email = emailInput.value;
         const password = passwordInput.value;
 
         if (!email || !password) {
-            alert("Por favor, ingresa tu correo y contraseña.");
+            mensajeAdvertencia("Por favor, ingresa tu correo y contraseña.");
             return;
         }
 
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                console.log("Usuario autenticado:", userCredential.user);
-                alert("Inicio de sesión exitoso.");
-                window.location.href = "index.html";
-            })
-            .catch((error) => {
-                console.error("Error en el inicio de sesión:", error.message);
-                alert("Error: " + error.message);
-            });
+        try {
+            mostrarPantallaDeCarga(); // 🌀
+
+            const usersRef = collection(db, "USUARIOS");
+            const q = query(usersRef, where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                ocultarPantallaDeCarga(); // 🛑
+                mensajeErrorR("El correo no está registrado. Regístrate primero.", "registro.html");
+                return;
+            }
+
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            console.log("Usuario autenticado:", userCredential.user);
+            ocultarPantallaDeCarga();
+            mensajeDeExitoR("Inicio de sesión exitoso.");
+
+        } catch (error) {
+            ocultarPantallaDeCarga();
+            console.error("Error:", error.message);
+            mensajeErrorR("Error: " + error.message, "index.html");
+        }
     });
 
     // 🔹 Login con Google
-    googleLoginButton.addEventListener("click", function (event) {
+    googleLoginButton.addEventListener("click", async function (event) {
         event.preventDefault();
 
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                console.log("Usuario autenticado con Google:", result.user);
-                alert("Inicio de sesión con Google exitoso.");
-                window.location.href = "index.html";
-            })
-            .catch((error) => {
-                console.error("Error en el login con Google:", error.message);
-                alert("Error: " + error.message);
-            });
+        try {
+            mostrarPantallaDeCarga();
+
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            const usersRef = collection(db, "USUARIOS");
+            const q = query(usersRef, where("email", "==", user.email));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                await signOut(auth);
+                ocultarPantallaDeCarga();
+                mensajeErrorR("El correo no está registrado. Regístrate primero.", "registro.html");
+                return;
+            }
+
+            console.log("Usuario autenticado con Google:", user);
+            ocultarPantallaDeCarga();
+            mensajeDeExitoR("Inicio de sesión exitoso.");
+
+        } catch (error) {
+            console.error("Error en el login con Google:", error.message);
+            ocultarPantallaDeCarga();
+            mensajeAdvertencia("Error: " + error.message);
+        }
     });
+}
+
+// 🔹 Loader UI
+function mostrarPantallaDeCarga() {
+    const pantalla = document.getElementById("pantalla-cargando");
+    if (pantalla) pantalla.style.display = "flex";
+}
+
+function ocultarPantallaDeCarga() {
+    const pantalla = document.getElementById("pantalla-cargando");
+    if (pantalla) pantalla.style.display = "none";
 }

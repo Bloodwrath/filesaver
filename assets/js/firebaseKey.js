@@ -1,6 +1,5 @@
 // Importamos Firebase correctamente
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -15,7 +14,6 @@ const firebaseConfig = {
 
 // Inicializamos Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 // Exportamos la instancia de Firebase correctamente
 export { app };
