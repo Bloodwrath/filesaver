@@ -220,6 +220,17 @@ async function subirUsuario(e) {
             fechaRegistro: new Date()
         });
 
+        // Crear documento de agenda para el usuario (si no existe)
+        await addDoc(collection(db, "agenda"), {
+            user: email,
+            type: "client",
+            name: nombre + " " + apellidop + " " + apellidom,
+            phone: telefono,
+            notes: "Contacto principal",
+            policy: "",
+            birthday: ""
+        });
+
         mensajeDeExito("Registro exitoso", "./index.html");
 
     } catch (error) {

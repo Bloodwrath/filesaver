@@ -1,0 +1,55 @@
+body.darkmode {
+    background: #181a1b !important;
+    color: #e0e0e0 !important;
+}
+
+body.darkmode .navbar,
+body.darkmode .card,
+body.darkmode .table,
+body.darkmode .form-control,
+body.darkmode .form-select {
+    background: #23272b !important;
+    color: #e0e0e0 !important;
+}
+
+body.darkmode .table th,
+body.darkmode .table td {
+    color: #e0e0e0 !important;
+}
+
+body.darkmode .btn-outline-secondary,
+body.darkmode .btn-outline-primary {
+    border-color: #e0e0e0 !important;
+    color: #e0e0e0 !important;
+}
+
+#calendar {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 500px;
+}
+
+body.darkmode #calendar {
+    background: #23272b;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+@media (max-width: 991px) {
+    #calendar {
+        min-height: 350px;
+    }
+}
+
+@media (max-width: 767px) {
+    .container-fluid {
+        padding: 0 5px;
+    }
+
+    #calendar {
+        min-height: 250px;
+    }
+}
