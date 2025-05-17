@@ -42,7 +42,7 @@ function initCalendar() {
         selectable: true,
         select: function (info) {
             clearTaskForm();
-            document.getElementById("task-datetime").value = info.startStr.slice(0, 16);
+            document.getElementById("task-date").value = info.startStr.slice(0, 10);
         },
         eventDidMount: function (info) {
             if (info.event.extendedProps.priority === "alta") {
@@ -72,24 +72,38 @@ async function saveTask(e) {
     e.preventDefault();
     const id = document.getElementById("task-id").value || uuid();
     const title = document.getElementById("task-title").value.trim();
-    const start = document.getElementById("task-datetime").value;
-    const duration = parseInt(document.getElementById("task-duration").value, 10);
+    const date = document.getElementById("task-date").value;
+    const startTime = document.getElementById("task-start-time").value;
+    const endTime = document.getElementById("task-end-time").value;
     const priority = document.getElementById("task-priority").value;
     const notes = document.getElementById("task-notes").value;
     const reminder = document.getElementById("task-reminder").checked;
 
+    // Validar campos de hora
+    if (!date || !startTime || !endTime) {
+        showAlert("Debes ingresar fecha, hora de inicio y hora de fin.", "warning");
+        return;
+    }
+    const start = `${date}T${startTime}`;
+    let end = `${date}T${endTime}`;
+    // Si la hora fin es menor o igual a la hora inicio, se asume que termina al día siguiente (cruza medianoche)
+    if (endTime <= startTime) {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        end = `${nextDay.toISOString().slice(0, 10)}T${endTime}`;
+    }
+
     // Organización automática: evitar solapamiento
-    const end = new Date(new Date(start).getTime() + duration * 60000).toISOString().slice(0, 16);
     const overlap = tasks.some(t =>
         t.id !== id &&
-        ((start >= t.start && start < t.end) || (end > t.start && end <= t.end))
+        ((start >= t.start && start < t.end) || (end > t.start && end <= t.end) || (start <= t.start && end >= t.end))
     );
     if (overlap) {
         showAlert("¡Solapamiento con otra tarea!", "warning");
         return;
     }
 
-    const task = { id, type: "task", user: userEmail, title, start, end, duration, priority, notes, reminder };
+    const task = { id, type: "task", user: userEmail, title, start, end, priority, notes, reminder };
     await setDoc(doc(agendaCol, id), task);
     showAlert("Tarea guardada");
     clearTaskForm();
@@ -97,8 +111,15 @@ async function saveTask(e) {
 function fillTaskForm(task) {
     document.getElementById("task-id").value = task.id;
     document.getElementById("task-title").value = task.title;
-    document.getElementById("task-datetime").value = task.start;
-    document.getElementById("task-duration").value = task.duration;
+    // Separar fecha y hora de inicio/fin
+    const startDate = task.start.slice(0, 10);
+    const startTime = task.start.slice(11, 16);
+    const endDate = task.end.slice(0, 10);
+    const endTime = task.end.slice(11, 16);
+    document.getElementById("task-date").value = startDate;
+    document.getElementById("task-start-time").value = startTime;
+    // Si termina el mismo día, mostrar la hora, si no, dejar la hora fin igual
+    document.getElementById("task-end-time").value = (startDate === endDate) ? endTime : endTime;
     document.getElementById("task-priority").value = task.priority;
     document.getElementById("task-notes").value = task.notes;
     document.getElementById("task-reminder").checked = !!task.reminder;
