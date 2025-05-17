@@ -223,37 +223,68 @@ function checkReminders() {
 
 function mostrarRecordatoriosPendientes() {
     const now = new Date();
-    // Solo tareas con recordatorio, que ya iniciaron, y no han sido eliminadas como recordatorio
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Domingo
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    // Tareas ya iniciadas y no eliminadas
     const pendientes = tasks.filter(task =>
         task.reminder &&
         new Date(task.start) <= now &&
         !localStorage.getItem("recordatorio_eliminado_" + task.id)
     );
-    if (pendientes.length === 0) return;
 
-    // Construir HTML de la lista de recordatorios
-    let html = '<ul style="list-style:none;padding:0;">';
-    pendientes.forEach(task => {
-        html += `
-            <li style="margin-bottom:10px;">
-                <b>${task.title}</b><br>
-                <span>Hora: ${new Date(task.start).toLocaleString()}</span><br>
-                <button class="btn btn-sm btn-danger" data-taskid="${task.id}">Eliminar recordatorio</button>
-            </li>
-        `;
-    });
-    html += '</ul>';
+    // Tareas de la semana (no eliminadas, no pasadas)
+    const semana = tasks.filter(task =>
+        task.reminder &&
+        new Date(task.start) > now &&
+        new Date(task.start) >= startOfWeek &&
+        new Date(task.start) <= endOfWeek &&
+        !localStorage.getItem("recordatorio_eliminado_" + task.id)
+    );
+
+    if (pendientes.length === 0 && semana.length === 0) return;
+
+    let html = '';
+    if (pendientes.length > 0) {
+        html += '<b>Tareas pendientes:</b><ul style="list-style:none;padding:0;">';
+        pendientes.forEach(task => {
+            html += `
+                <li style="margin-bottom:10px;">
+                    <b>${task.title}</b><br>
+                    <span>Hora: ${new Date(task.start).toLocaleString()}</span><br>
+                    <button class="btn btn-sm btn-danger" data-taskid="${task.id}">Eliminar recordatorio</button>
+                </li>
+            `;
+        });
+        html += '</ul>';
+    }
+    if (semana.length > 0) {
+        html += '<b>Recordatorios de esta semana:</b><ul style="list-style:none;padding:0;">';
+        semana.forEach(task => {
+            html += `
+                <li style="margin-bottom:10px;">
+                    <b>${task.title}</b><br>
+                    <span>Hora: ${new Date(task.start).toLocaleString()}</span><br>
+                    <button class="btn btn-sm btn-danger" data-taskid="${task.id}">Eliminar recordatorio</button>
+                </li>
+            `;
+        });
+        html += '</ul>';
+    }
 
     Swal.fire({
-        title: 'Tareas pendientes',
+        title: 'Recordatorios',
         html: html,
         icon: 'info',
         showConfirmButton: true,
         confirmButtonText: 'Cerrar',
         didOpen: () => {
-            // Agregar eventos a los botones de eliminar
             document.querySelectorAll('button[data-taskid]').forEach(btn => {
-                btn.addEventListener('click', async function (e) {
+                btn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     const taskId = this.getAttribute('data-taskid');
                     localStorage.setItem("recordatorio_eliminado_" + taskId, "1");
