@@ -163,9 +163,11 @@ async function mostrarRecordatoriosAgendaUsuario(email) {
     endOfWeek.setHours(23, 59, 59, 999);
 
     let tasks = [];
+    let clients = [];
     snapshot.forEach(doc => {
         const data = doc.data();
         if (data.type === "task") tasks.push(data);
+        if (data.type === "client") clients.push(data);
     });
 
     const pendientes = tasks.filter(task =>
@@ -181,7 +183,15 @@ async function mostrarRecordatoriosAgendaUsuario(email) {
         !localStorage.getItem("recordatorio_eliminado_" + task.id)
     );
 
-    if (pendientes.length === 0 && semana.length === 0) return;
+    // Cumpleaños de clientes hoy
+    const today = now.toISOString().slice(5, 10); // MM-DD
+    const cumpleanios = clients.filter(client =>
+        client.birthday &&
+        client.birthday.slice(5, 10) === today &&
+        !localStorage.getItem("recordatorio_cumple_" + client.id)
+    );
+
+    if (pendientes.length === 0 && semana.length === 0 && cumpleanios.length === 0) return;
 
     let html = '';
     if (pendientes.length > 0) {
@@ -210,6 +220,26 @@ async function mostrarRecordatoriosAgendaUsuario(email) {
         });
         html += '</ul>';
     }
+    if (cumpleanios.length > 0) {
+        html += '<b>Cumpleaños de clientes hoy:</b><ul style="list-style:none;padding:0;">';
+        cumpleanios.forEach(client => {
+            const nombre = client.name || "Cliente";
+            const telefono = client.phone ? client.phone.replace(/\D/g, "") : "";
+            const mensaje = encodeURIComponent(`¡Feliz cumpleaños, ${nombre}! 🎉`);
+            const whatsappLink = telefono.length >= 10
+                ? `https://wa.me/52${telefono}?text=${mensaje}`
+                : "";
+            html += `
+                <li style="margin-bottom:10px;">
+                    <b>${nombre}</b><br>
+                    <span>Tel: ${telefono || "No registrado"}</span><br>
+                    <button class="btn btn-sm btn-success" ${whatsappLink ? `onclick="window.open('${whatsappLink}','_blank')"` : "disabled"}>Felicitar por WhatsApp</button>
+                    <button class="btn btn-sm btn-danger" data-cumpleid="${client.id}">Eliminar recordatorio</button>
+                </li>
+            `;
+        });
+        html += '</ul>';
+    }
 
     Swal.fire({
         title: 'Recordatorios',
@@ -223,6 +253,14 @@ async function mostrarRecordatoriosAgendaUsuario(email) {
                     e.stopPropagation();
                     const taskId = this.getAttribute('data-taskid');
                     localStorage.setItem("recordatorio_eliminado_" + taskId, "1");
+                    this.parentElement.style.display = "none";
+                });
+            });
+            document.querySelectorAll('button[data-cumpleid]').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const clientId = this.getAttribute('data-cumpleid');
+                    localStorage.setItem("recordatorio_cumple_" + clientId, "1");
                     this.parentElement.style.display = "none";
                 });
             });

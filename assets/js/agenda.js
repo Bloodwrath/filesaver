@@ -192,18 +192,27 @@ function renderClientsTable() {
     clients
         .filter(c => c.name.toLowerCase().includes(search) || c.phone.includes(search) || (c.policy && c.policy.includes(search)))
         .forEach(client => {
+            const telefono = client.phone ? client.phone.replace(/\D/g, "") : "";
+            const nombre = client.name || "Cliente";
+            const mensaje = encodeURIComponent(`¡Hola ${nombre}!`);
+            const whatsappLink = telefono.length >= 10
+                ? `https://wa.me/52${telefono}?text=${mensaje}`
+                : "";
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td>${client.name}</td>
-                <td>${client.phone}</td>
+                <td>${nombre}</td>
+                <td>${telefono || ""}</td>
                 <td>${client.birthday || ""}</td>
                 <td>${client.policy || ""}</td>
                 <td>${client.notes || ""}</td>
                 <td>
                     <button class="btn btn-sm btn-outline-secondary" title="Editar"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-success ms-1" title="WhatsApp" ${whatsappLink ? `onclick="window.open('${whatsappLink}','_blank')"` : "disabled"}>
+                        <i class="bi bi-whatsapp"></i>
+                    </button>
                 </td>
             `;
-            tr.querySelector("button").onclick = () => fillClientForm(client);
+            tr.querySelector("button.btn-outline-secondary").onclick = () => fillClientForm(client);
             tbody.appendChild(tr);
         });
 }
@@ -245,20 +254,17 @@ function checkReminders() {
 function mostrarRecordatoriosPendientes() {
     const now = new Date();
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay()); // Domingo
+    startOfWeek.setDate(now.getDate() - now.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
 
-    // Tareas ya iniciadas y no eliminadas
     const pendientes = tasks.filter(task =>
         task.reminder &&
         new Date(task.start) <= now &&
         !localStorage.getItem("recordatorio_eliminado_" + task.id)
     );
-
-    // Tareas de la semana (no eliminadas, no pasadas)
     const semana = tasks.filter(task =>
         task.reminder &&
         new Date(task.start) > now &&
@@ -266,8 +272,15 @@ function mostrarRecordatoriosPendientes() {
         new Date(task.start) <= endOfWeek &&
         !localStorage.getItem("recordatorio_eliminado_" + task.id)
     );
+    // Cumpleaños de clientes hoy
+    const today = now.toISOString().slice(5, 10);
+    const cumpleanios = clients.filter(client =>
+        client.birthday &&
+        client.birthday.slice(5, 10) === today &&
+        !localStorage.getItem("recordatorio_cumple_" + client.id)
+    );
 
-    if (pendientes.length === 0 && semana.length === 0) return;
+    if (pendientes.length === 0 && semana.length === 0 && cumpleanios.length === 0) return;
 
     let html = '';
     if (pendientes.length > 0) {
@@ -296,6 +309,26 @@ function mostrarRecordatoriosPendientes() {
         });
         html += '</ul>';
     }
+    if (cumpleanios.length > 0) {
+        html += '<b>Cumpleaños de clientes hoy:</b><ul style="list-style:none;padding:0;">';
+        cumpleanios.forEach(client => {
+            const nombre = client.name || "Cliente";
+            const telefono = client.phone ? client.phone.replace(/\D/g, "") : "";
+            const mensaje = encodeURIComponent(`¡Feliz cumpleaños, ${nombre}! 🎉`);
+            const whatsappLink = telefono.length >= 10
+                ? `https://wa.me/52${telefono}?text=${mensaje}`
+                : "";
+            html += `
+                <li style="margin-bottom:10px;">
+                    <b>${nombre}</b><br>
+                    <span>Tel: ${telefono || "No registrado"}</span><br>
+                    <button class="btn btn-sm btn-success" ${whatsappLink ? `onclick="window.open('${whatsappLink}','_blank')"` : "disabled"}>Felicitar por WhatsApp</button>
+                    <button class="btn btn-sm btn-danger" data-cumpleid="${client.id}">Eliminar recordatorio</button>
+                </li>
+            `;
+        });
+        html += '</ul>';
+    }
 
     Swal.fire({
         title: 'Recordatorios',
@@ -309,6 +342,14 @@ function mostrarRecordatoriosPendientes() {
                     e.stopPropagation();
                     const taskId = this.getAttribute('data-taskid');
                     localStorage.setItem("recordatorio_eliminado_" + taskId, "1");
+                    this.parentElement.style.display = "none";
+                });
+            });
+            document.querySelectorAll('button[data-cumpleid]').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const clientId = this.getAttribute('data-cumpleid');
+                    localStorage.setItem("recordatorio_cumple_" + clientId, "1");
                     this.parentElement.style.display = "none";
                 });
             });
