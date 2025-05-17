@@ -3,7 +3,7 @@
 //2.0.0
 // Importar Firebase
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, doc, getDocs as getDocsSub } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { app } from "./firebaseKey.js";
 
 // 🔹 Inicializar Firebase
@@ -102,9 +102,15 @@ async function mostrarPolizas() {
             if (querySnapshot.empty) {
                 listaArchivosHTML += `<tr><td colspan="4" class="text-center">No se encontraron pólizas ${filtradorValue ? 'con ese filtro' : 'para este usuario'}.</td></tr>`;
             } else {
-                querySnapshot.forEach((doc) => {
-                    const datos = doc.data();
-                    const base64Archivo = datos.urlArchivo; // Asumiendo que es base64
+                querySnapshot.forEach((docSnap) => {
+                    const datos = docSnap.data();
+                    // Concatenar todos los fragmentos de base64
+                    let base64Archivo = datos.urlArchivo || "";
+                    let extIndex = 1;
+                    while (datos[`urlArchivoExtencion${extIndex}`]) {
+                        base64Archivo += datos[`urlArchivoExtencion${extIndex}`];
+                        extIndex++;
+                    }
                     const aseguradora = datos.aseguradora || 'N/A';
                     const poliza = datos.poliza || 'N/A';
                     const serie = datos.NIV || 'N/A'; // Usar NIV como 'Serie'
@@ -117,17 +123,40 @@ async function mostrarPolizas() {
                         <td>${poliza}</td>
                         <td>${serie}</td>
                         <td>
-                            <a class="btn btn-primary btn-sm" href="data:application/pdf;base64,${base64Archivo}" download="poliza_${aseguradora}_${poliza}.pdf">
+                            <button class="btn btn-primary btn-sm descargar-pdf" data-id="${docSnap.id}" data-aseguradora="${aseguradora}" data-poliza="${poliza}">
                                 Descargar PDF
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 `;
                 });
             }
-
             listaArchivosHTML += '</tbody></table></div>';
             document.getElementById("tablaPolizas").innerHTML = listaArchivosHTML;
+
+            // Agregar evento para descarga
+            document.querySelectorAll('.descargar-pdf').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const polizaId = this.getAttribute('data-id');
+                    const aseguradora = this.getAttribute('data-aseguradora');
+                    const poliza = this.getAttribute('data-poliza');
+                    // Obtener todos los chunks y concatenar
+                    const chunksRef = collection(db, "polizas", polizaId, "chunks");
+                    const chunksSnap = await getDocsSub(chunksRef);
+                    let chunksArr = [];
+                    chunksSnap.forEach(chunkDoc => {
+                        chunksArr.push({ order: chunkDoc.data().order, data: chunkDoc.data().data });
+                    });
+                    // Ordenar por 'order'
+                    chunksArr.sort((a, b) => a.order - b.order);
+                    const base64Archivo = chunksArr.map(c => c.data).join('');
+                    // Descargar
+                    const link = document.createElement('a');
+                    link.href = `data:application/pdf;base64,${base64Archivo}`;
+                    link.download = `poliza_${aseguradora}_${poliza}.pdf`;
+                    link.click();
+                });
+            });
 
         } catch (error) {
             console.error("Error al obtener las pólizas:", error);

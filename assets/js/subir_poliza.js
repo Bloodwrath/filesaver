@@ -2,9 +2,10 @@
 //2.0.0
 //2.0.0
 // Importar Firebase
-import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 import { app } from "./firebaseKey.js";
+import { convertirArchivoABase64 } from "./extraccion.js";
 
 // 🔹 Inicializar Firebase
 const auth = getAuth(app);
@@ -67,24 +68,36 @@ async function subirPoliza() {
         const base64Archivo = await convertirArchivoABase64(archivo);
         console.log("Archivo en Base64:", base64Archivo);
 
-
-        // 🔹 Guardar metadatos y archivo en Firestore
+        // 🔹 Guardar metadatos en Firestore (sin el archivo)
         const docRef = await addDoc(collection(db, "polizas"), {
             aseguradora: aseguradora,
-            urlArchivo: base64Archivo, // Guardar el archivo en Base64
-            NIV: serie, // Provide a default value or remove this line if not needed
-            primaTotal: primatotal, // Guardar el valor de primaNeta
-            primaNeta: primaneta, // Provide a default value or remove this line if not needed
+            NIV: serie,
+            primaTotal: primatotal,
+            primaNeta: primaneta,
             inicioVigencia: fechaInicio,
             finVigencia: fechaFin,
             ruta: Ruta,
             economico: Economico,
-            usuario: currentUser.email,// Guardar el correo del usuario autenticado
-            nombreAsegurado: nombreasegurado, // Guardar el nombre asegurado
-            poliza: Poliza, // Guardar el valor de póliza
+            usuario: currentUser.email,
+            nombreAsegurado: nombreasegurado,
+            poliza: Poliza,
             pagado: false,
             urlPago: ""
         });
+
+        // 🔹 Dividir el base64 en fragmentos y guardar cada uno en la subcolección "chunks"
+        const MAX_CHUNK_SIZE = 900000; // Menor a 1MB para evitar overhead
+        let offset = 0, i = 0;
+        while (offset < base64Archivo.length) {
+            const chunk = base64Archivo.substring(offset, offset + MAX_CHUNK_SIZE);
+            await setDoc(
+                doc(db, "polizas", docRef.id, "chunks", `chunk${i}`),
+                { data: chunk, order: i }
+            );
+            offset += MAX_CHUNK_SIZE;
+            i++;
+        }
+
         mensajeDeExitoR("Póliza subida con éxito.");
     }
     catch (error) {

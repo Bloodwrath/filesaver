@@ -3,7 +3,7 @@
 //2.0.0
 // Importar Firebase
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, doc, getDocs as getDocsSub } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { app } from "./firebaseKey.js";
 
 // 🔹 Inicializar Firebase
@@ -53,15 +53,7 @@ async function mostrarPolizas() {
             default:
                 console.warn("Opción inválida:", opcionValue);
                 return; // no hacer la consulta si no es válido
-            // Salir del switch si no hay filtro válido
-            //document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona una opción de filtro válida.</p>';
-            //return; // No continuar si la opción no es válida
         }
-        // Construir la consulta con el filtro dinámico
-        // Nota: Firestore requiere índices compuestos para consultas con where() y orderBy() o múltiples where() en campos diferentes.
-        // Si usas ==, >=, <=, >, < en diferentes campos, necesitarás crear un índice en la consola de Firebase.
-        // Para búsquedas tipo "contiene" (like), Firestore no tiene soporte directo. Se necesitaría una solución externa (e.g., Algolia) o filtrar en el cliente.
-        // Aquí usamos '==' para coincidencias exactas.
         if (!campoFiltro) {
             document.getElementById("tablaPolizas").innerHTML = '<p class="text-warning">Por favor, selecciona un filtro válido.</p>';
             return;
@@ -99,9 +91,8 @@ async function mostrarPolizas() {
         if (querySnapshot.empty) {
             listaArchivosHTML += `<tr><td colspan="4" class="text-center">No se encontraron pólizas ${filtradorValue ? 'con ese filtro' : 'para este usuario'}.</td></tr>`;
         } else {
-            querySnapshot.forEach((doc) => {
-                const datos = doc.data();
-                const base64Archivo = datos.urlArchivo; // Asumiendo que es base64
+            querySnapshot.forEach((docSnap) => {
+                const datos = docSnap.data();
                 const aseguradora = datos.aseguradora || 'N/A';
                 const poliza = datos.poliza || 'N/A';
                 const serie = datos.NIV || 'N/A'; // Usar NIV como 'Serie'
@@ -117,9 +108,9 @@ async function mostrarPolizas() {
                         <td>${fechaFin}</td>
                         <td>${primatotal}</td>
                         <td>
-                            <a class="btn btn-primary btn-sm" href="data:application/pdf;base64,${base64Archivo}" download="poliza_${aseguradora}_${poliza}.pdf">
+                            <button class="btn btn-primary btn-sm descargar-pdf" data-id="${docSnap.id}" data-aseguradora="${aseguradora}" data-poliza="${poliza}">
                                 Descargar PDF
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -129,10 +120,33 @@ async function mostrarPolizas() {
         listaArchivosHTML += '</tbody></table></div>';
         document.getElementById("tablaPolizas").innerHTML = listaArchivosHTML;
 
+        // Agregar evento para descarga
+        document.querySelectorAll('.descargar-pdf').forEach(btn => {
+            btn.addEventListener('click', async function () {
+                const polizaId = this.getAttribute('data-id');
+                const aseguradora = this.getAttribute('data-aseguradora');
+                const poliza = this.getAttribute('data-poliza');
+                // Obtener todos los chunks y concatenar
+                const chunksRef = collection(db, "polizas", polizaId, "chunks");
+                const chunksSnap = await getDocsSub(chunksRef);
+                let chunksArr = [];
+                chunksSnap.forEach(chunkDoc => {
+                    chunksArr.push({ order: chunkDoc.data().order, data: chunkDoc.data().data });
+                });
+                // Ordenar por 'order'
+                chunksArr.sort((a, b) => a.order - b.order);
+                const base64Archivo = chunksArr.map(c => c.data).join('');
+                // Descargar
+                const link = document.createElement('a');
+                link.href = `data:application/pdf;base64,${base64Archivo}`;
+                link.download = `poliza_${aseguradora}_${poliza}.pdf`;
+                link.click();
+            });
+        });
+
     } catch (error) {
         console.error("Error al obtener las pólizas:", error);
         document.getElementById("tablaPolizas").innerHTML = '<p class="text-danger">Error al cargar las pólizas. Intenta de nuevo más tarde.</p>';
-        // Considerar mostrar un mensaje más específico si es un error de índice compuesto
         if (error.code === 'failed-precondition') {
             document.getElementById("tablaPolizas").innerHTML += '<p class="text-warning">Es posible que se requiera un índice compuesto en Firestore para esta consulta. Revisa la consola de Firebase.</p>';
         }
